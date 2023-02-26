@@ -1,0 +1,14 @@
+Lose
+------------UAlbertaBot stats: -------------------
+Number of units: 62
+gatheredMinerals: 6442
+gatheredGas: 0
+getUnitScore: 4200
+getBuildingScore: 1175
+------------Opponent stats: -------------------
+Number of units: 9
+gatheredMinerals: 0
+gatheredGas: 0
+getUnitScore: 0
+getBuildingScore: 0
+Game Over

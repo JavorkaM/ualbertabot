@@ -6,10 +6,10 @@
 #include <chrono>
 
 void PlayGame();
-
+size_t gameCount;
 int main(int argc, char * argv[])
 {
-    size_t gameCount = 0;
+    gameCount = 0;
 
     // if we are not currently connected to BWAPI, try to reconnect
     while (!BWAPI::BWAPIClient.connect())
@@ -33,7 +33,7 @@ int main(int argc, char * argv[])
         // If we are successfully in a game, call the module to play the game
         if (BWAPI::Broodwar->isInGame())
         {
-            std::cout << "Playing game " << gameCount++ << " on map " << BWAPI::Broodwar->mapFileName() << "\n";
+            std::cout << "Playing game " << gameCount++ << " on map " << BWAPI::Broodwar->mapName() << "\n";
 
             PlayGame();
         }
@@ -58,7 +58,23 @@ void PlayGame()
             {
                 case BWAPI::EventType::MatchStart:   { bot.onStart();                       break; }
                 case BWAPI::EventType::MatchFrame:   { bot.onFrame();                       break; }
-                case BWAPI::EventType::MatchEnd:     { bot.onEnd(e.isWinner());             break; }
+                case BWAPI::EventType::MatchEnd:     { 
+                    std::cout << "game num.: " << gameCount << std::endl;
+                    auto race = BWAPI::Broodwar->enemy()->getRace();
+                    if (race == BWAPI::Races::Zerg) {
+                        std::cout << "Zerg" << std::endl;
+                    }
+                    else if (race == BWAPI::Races::Terran) {
+                        std::cout << "Terran" << std::endl;
+                    }
+                    else if (race == BWAPI::Races::Protoss) {
+                        std::cout << "Protoss" << std::endl;
+                    }
+                    else {
+                        std::cout << "Unknown" << std::endl;
+                    }
+                    bot.onEnd(e.isWinner());             break;
+                }
                 case BWAPI::EventType::UnitShow:     { bot.onUnitShow(e.getUnit());         break; }
                 case BWAPI::EventType::UnitHide:     { bot.onUnitHide(e.getUnit());         break; }
                 case BWAPI::EventType::UnitCreate:   { bot.onUnitCreate(e.getUnit());       break; }
@@ -78,5 +94,4 @@ void PlayGame()
         }
     }
 
-    std::cout << "Game Over\n";
 }
