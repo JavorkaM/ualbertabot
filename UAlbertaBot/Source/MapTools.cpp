@@ -425,6 +425,33 @@ BWAPI::TilePosition MapTools::getLeastRecentlySeenTile() const
     return leastSeen;
 }
 
+BWAPI::TilePosition MapTools::getLeastRecentlySeenTileEnemy() const
+{
+    int minSeen = std::numeric_limits<int>::max();
+    BWAPI::TilePosition leastSeen;
+    const BaseLocation* baseLocation = Global::Bases().getPlayerStartingBaseLocation(BWAPI::Broodwar->self());
+    const BaseLocation* enemyBaseLocation = Global::Bases().getPlayerStartingBaseLocation(BWAPI::Broodwar->enemy());
+    
+    UAB_ASSERT(baseLocation, "Null baselocation is insanely ");
+
+    if (!enemyBaseLocation)
+        enemyBaseLocation = baseLocation;
+
+    for (auto& tile : enemyBaseLocation->getClosestTiles())
+    {
+        UAB_ASSERT(isValidTile(tile), "How is this tile not valid?");
+
+        const int lastSeen = m_lastSeen.get(tile.x, tile.y);
+        if (lastSeen < minSeen)
+        {
+            minSeen = lastSeen;
+            leastSeen = tile;
+        }
+    }
+
+    return leastSeen;
+}
+
 bool MapTools::canWalk(int tileX, int tileY) const
 {
     for (int i=0; i<4; ++i)

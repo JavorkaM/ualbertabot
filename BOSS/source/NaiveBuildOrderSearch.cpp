@@ -251,25 +251,29 @@ const BuildOrder & NaiveBuildOrderSearch::solve()
     BuildOrder finalBuildOrder;
     for (size_t a(0); a < buildOrder.size(); ++a)
     {
-        const ActionType & nextAction = buildOrder[a];
+        const ActionType& nextAction = buildOrder[a];
         UnitCountType maxSupply = _state.getUnitData().getMaxSupply();
         UnitCountType currentSupply = _state.getUnitData().getCurrentSupply();
         UnitCountType supplyInProgress = _state.getUnitData().getSupplyInProgress();
 
-		// insert 1 or more supply providers if needed
+        // insert 1 or more supply providers if needed
         // TODO: don't go over 200 supply
-		while (!nextAction.isMorphed() && !nextAction.isSupplyProvider() && (nextAction.supplyRequired() > (maxSupply + supplyInProgress - currentSupply)))
-		{
-			BOSS_ASSERT(_state.isLegal(supplyProvider), "Should be able to build more supply here. Max: %d", maxSupply);
-			finalBuildOrder.add(supplyProvider);
-			_state.doAction(supplyProvider);
+        while (!nextAction.isMorphed() && !nextAction.isSupplyProvider() && (nextAction.supplyRequired() > (maxSupply + supplyInProgress - currentSupply)))
+        {
+            BOSS_ASSERT(_state.isLegal(supplyProvider), "Should be able to build more supply here. Max: %d", maxSupply);
+            finalBuildOrder.add(supplyProvider);
+            _state.doAction(supplyProvider);
 
-			maxSupply = _state.getUnitData().getMaxSupply();
-			currentSupply = _state.getUnitData().getCurrentSupply();
-			supplyInProgress = _state.getUnitData().getSupplyInProgress();
-		}
+            maxSupply = _state.getUnitData().getMaxSupply();
+            currentSupply = _state.getUnitData().getCurrentSupply();
+            supplyInProgress = _state.getUnitData().getSupplyInProgress();
+        }
 
-		BOSS_ASSERT(_state.isLegal(nextAction), "Should be able to build the next action now");
+        if (currentSupply > 370 && (nextAction.getUnitType() == BWAPI::UnitTypes::Protoss_Dragoon || nextAction.getUnitType() == BWAPI::UnitTypes::Protoss_Zealot || nextAction.getUnitType() == BWAPI::UnitTypes::Protoss_Probe || nextAction.getUnitType() == BWAPI::UnitTypes::Protoss_Dark_Templar)){
+            std::cout << "don't go over 200 supply" << std::endl;
+            continue;
+        }
+        BOSS_ASSERT(_state.isLegal(nextAction), "Should be able to build the next action now");
 		finalBuildOrder.add(nextAction);
 		_state.doAction(nextAction);
 	}

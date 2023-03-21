@@ -36,6 +36,7 @@ public:
     void drawResourceDebugInfo();
     void updateWorkerStatus();
     void drawWorkerInformation(int x, int y);
+    void setWorkersToScout();
 
     int  getNumMineralWorkers();
     int  getNumGasWorkers();

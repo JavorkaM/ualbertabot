@@ -10,6 +10,8 @@
 
 using namespace UAlbertaBot;
 
+int num = 0;
+
 ScoutManager::ScoutManager()
 {
 }
@@ -22,7 +24,6 @@ void ScoutManager::update()
     {
         return;
     }
-
     moveScouts();
     drawScoutInformation(200, 320);
 }
@@ -54,6 +55,20 @@ void ScoutManager::moveScouts()
 {
     if (!m_workerScout || !m_workerScout->exists() || !(m_workerScout->getHitPoints() > 0))
     {
+        return;
+    }
+
+    if (BWAPI::Broodwar->getFrameCount() > 86000)
+    {
+        std::vector<const BaseLocation*> baseLocations = Global::Bases().getBaseLocations();
+        if (!(baseLocations[std::rand() % (baseLocations.size() - 0 + 1)]))
+            Micro::SmartMove(m_workerScout, BWAPI::Position(baseLocations[std::rand() % (baseLocations.size() - 0 + 1)]->getPosition()));
+
+        std::ofstream newfile;
+        newfile.open("D://Everything School//BP//WorkerBreakPoint//m" + std::to_string(num) + ".txt", std::ios_base::app);
+        newfile << "Here\n";
+        newfile.close();
+        num++;
         return;
     }
 
@@ -99,6 +114,7 @@ void ScoutManager::moveScouts()
             }
         }
     }
+    
 
     // if we know where the enemy region is and where our scout is
     if (enemyBaseLocation)

@@ -387,7 +387,12 @@ BWAPI::Unit WorkerData::getMineralToMine(BWAPI::Unit worker)
         {
             double dist = mineral->getDistance(depot);
             double numAssigned = m_workersOnMineralPatch[mineral];
-
+            
+            
+            if (mineral->getResources() < 200) {
+                continue;
+            }
+           
             if (numAssigned < bestNumAssigned)
             {
                 bestMineral = mineral;
@@ -404,6 +409,40 @@ BWAPI::Unit WorkerData::getMineralToMine(BWAPI::Unit worker)
                 }
             }
 
+        }
+    }
+    
+    if (!bestMineral) {
+        for (auto& depot : m_depots) {
+            BWAPI::Unitset mineralPatches = getMineralPatchesNearDepot(depot);
+
+            for (auto& mineral : mineralPatches)
+            {
+                double dist = mineral->getDistance(depot);
+                double numAssigned = m_workersOnMineralPatch[mineral];
+
+
+                if (mineral->getResources() < 200) {
+                    continue;
+                }
+
+                if (numAssigned < bestNumAssigned)
+                {
+                    bestMineral = mineral;
+                    bestDist = dist;
+                    bestNumAssigned = numAssigned;
+                }
+                else if (numAssigned == bestNumAssigned)
+                {
+                    if (dist < bestDist)
+                    {
+                        bestMineral = mineral;
+                        bestDist = dist;
+                        bestNumAssigned = numAssigned;
+                    }
+                }
+
+            }
         }
     }
 

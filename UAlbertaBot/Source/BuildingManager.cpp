@@ -436,7 +436,11 @@ BWAPI::TilePosition BuildingManager::getBuildingLocation(const Building & b)
     {
         // get the location 
 		auto tile = Global::Bases().getNextExpansion(BWAPI::Broodwar->self());
-
+        if (!tile)
+            std::cout << "no base to expand to " << std::endl;
+        else {
+            std::cout << "should be expanding to " + std::to_string(tile.x) + "-" + std::to_string(tile.y) << std::endl;
+        }
         return tile;
     }
 

@@ -73,7 +73,7 @@ void UAlbertaBotModule::onStart()
 void UAlbertaBotModule::onEnd(bool isWinner) 
 {
     std::ofstream myfile;
-    myfile.open("D://Everything School//BP//MatchesZergSHDragooon//m" + std::to_string(game_num) + ".txt", std::ios_base::app);
+    myfile.open("D://Everything School//BP//RightClickDragoon//m" + std::to_string(game_num) + ".txt", std::ios_base::app);
 
 
 	if (Config::Modules::UsingGameCommander)
@@ -162,7 +162,8 @@ void UAlbertaBotModule::onEnd(bool isWinner)
     std::cout << opponent->getRace() << std::endl;
     myfile << opponent->getRace() + "\n";
 
-
+    myfile << "numofNexus: " + std::to_string(BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Nexus)) + "\n";
+    myfile << "numofDetectors: " + std::to_string(BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Observer)) + "\n";
 
     myfile.close();
     game_num++;

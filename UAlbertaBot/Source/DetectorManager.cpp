@@ -1,8 +1,11 @@
 #include "Common.h"
 #include "DetectorManager.h"
 #include "Global.h"
+#include "BaseLocationManager.h"
 #include "Micro.h"
 #include "MapTools.h"
+#include "InformationManager.h"
+#include "BaseLocation.h"
 
 using namespace UAlbertaBot;
 
@@ -47,7 +50,13 @@ void DetectorManager::executeMicro(const BWAPI::Unitset & targets)
     for (auto & detectorUnit : detectorUnits)
     {
         // if we need to regroup, move the detectorUnit to that location
-        if (!detectorUnitInBattle && unitClosestToEnemy && unitClosestToEnemy->getPosition().isValid())
+        if (BWAPI::Broodwar->getFrameCount() > 70000) {
+            std::vector<const BaseLocation*> baseLocations = Global::Bases().getBaseLocations();
+            if (!(baseLocations[std::rand() % (baseLocations.size() - 0 + 1)]))
+                Micro::SmartMove(detectorUnit, BWAPI::Position(baseLocations[std::rand() % (baseLocations.size() - 0 + 1)]->getPosition()));
+
+        }
+        else if ((!detectorUnitInBattle && unitClosestToEnemy && unitClosestToEnemy->getPosition().isValid()) || Global::Info().enemyHasCloakedUnits() && unitClosestToEnemy)
         {
             Micro::SmartMove(detectorUnit, unitClosestToEnemy->getPosition());
             detectorUnitInBattle = true;
@@ -56,12 +65,11 @@ void DetectorManager::executeMicro(const BWAPI::Unitset & targets)
         // send him to scout around the map
         else
         {
-            BWAPI::Position explorePosition = BWAPI::Position(Global::Map().getLeastRecentlySeenTile());
+            BWAPI::Position explorePosition = BWAPI::Position(Global::Map().getLeastRecentlySeenTileEnemy());
             Micro::SmartMove(detectorUnit, explorePosition);
         }
     }
 }
-
 
 BWAPI::Unit DetectorManager::closestCloakedUnit(const BWAPI::Unitset & cloakedUnits, BWAPI::Unit detectorUnit)
 {

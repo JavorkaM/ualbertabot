@@ -121,11 +121,13 @@ void Micro::SmartMove(BWAPI::Unit attacker, const BWAPI::Position & targetPositi
 
 void Micro::SmartRightClick(BWAPI::Unit unit, BWAPI::Unit target)
 {
-    UAB_ASSERT(unit, "SmartRightClick: Unit not valid");
-    UAB_ASSERT(target, "SmartRightClick: Target not valid");
+    //UAB_ASSERT(unit, "SmartRightClick: Unit not valid");
+    //UAB_ASSERT(target, "SmartRightClick: Target not valid");
 
     if (!unit || !target)
     {
+        UAB_ASSERT(unit, "SmartRightClick: Unit not valid");
+        UAB_ASSERT(target, "SmartRightClick: Target not valid");
         return;
     }
 

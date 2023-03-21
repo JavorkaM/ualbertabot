@@ -47,6 +47,7 @@ const bool StrategyManager::shouldExpandNow() const
     if (Global::Bases().getNextExpansion(BWAPI::Broodwar->self()) == BWAPI::TilePositions::None)
     {
         BWAPI::Broodwar->printf("No valid expansion location");
+        std::cout << "No valid expansion location" << std::endl;
         return false;
     }
 
@@ -59,19 +60,19 @@ const bool StrategyManager::shouldExpandNow() const
     int minute          = frame / (24*60);
 
     // if we have a ton of idle workers then we need a new expansion
-    if (Global::Workers().getNumIdleWorkers() > 10)
+    if (Global::Workers().getNumIdleWorkers() > 3)
     {
         return true;
     }
 
     // if we have a ridiculous stockpile of minerals, expand
-    if (BWAPI::Broodwar->self()->minerals() > 3000)
+    if (BWAPI::Broodwar->self()->minerals() > 600)
     {
         return true;
     }
 
     // we will make expansion N after array[N] minutes have passed
-    std::vector<int> expansionTimes ={5, 10, 20, 30, 40 , 50};
+    std::vector<int> expansionTimes ={10, 20, 30, 40 , 50};
 
     for (size_t i(0); i < expansionTimes.size(); ++i)
     {
@@ -173,8 +174,14 @@ const MetaPairVector StrategyManager::getProtossBuildOrderGoal() const
         goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Observer, 1));
     }
 
+
+
     // add observer to the goal if the enemy has cloaked units
-    if (Global::Info().enemyHasCloakedUnits())
+    // or if game is long add Robotics_Facility for observers
+
+    printf("in strategy\n at %d", BWAPI::Broodwar->getFrameCount());
+
+    if (Global::Info().enemyHasCloakedUnits() && BWAPI::Broodwar->getFrameCount() > 10000)
     {
         goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Robotics_Facility, 1));
 
@@ -182,15 +189,46 @@ const MetaPairVector StrategyManager::getProtossBuildOrderGoal() const
         {
             goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Observatory, 1));
         }
+        else {
+            goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Robotics_Facility, 1));
+        }
         if (BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Observatory) > 0)
         {
+            if(BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Observer) < 5)
+                goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Observer, 1));
+        }
+        else {
+            goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Observatory, 1));
+        }
+    }
+    if (BWAPI::Broodwar->getFrameCount() > 45000)
+    {
+        if (BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility) < 1)
+        {
+            goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Robotics_Facility, 1));
+        }
+        else if (BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Observatory) < 1){
+            goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Observatory, 1));
+        }
+        else if(BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Observer) < 5){
             goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Observer, 1));
         }
     }
 
+
+    std::cout << "completed robotics: " << BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility) << std::endl;
+    std::cout << "all robotics: " << BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility) << std::endl;
+
+    if (BWAPI::Broodwar->getFrameCount() > 70000 && BWAPI::Broodwar->self()->getUnits().size() > 20) {
+        Global::Workers().setWorkersToScout();
+    }
+    
+   
+
     // if we want to expand, insert a nexus into the build order
     if (shouldExpandNow())
     {
+        std::cout << "should expand in strategy" << std::endl;
         goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Nexus, numNexusAll + 1));
     }
 

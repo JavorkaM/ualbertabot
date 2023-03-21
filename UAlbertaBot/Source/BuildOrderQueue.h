@@ -24,6 +24,21 @@ struct BuildOrderItem
     {
         return priority < x.priority;
     }
+    bool operator==(const BuildOrderItem &x) const
+    {
+        if (metaType.getUnitType().getName() == x.metaType.getUnitType().getName())
+            return true;
+        else
+            false;
+    }
+    
+    bool operator!=(const BuildOrderItem &x) const
+    {
+        if (metaType.getUnitType().getName() != x.metaType.getUnitType().getName())
+            return true;
+        else
+            false;
+    }
 };
 
 class BuildOrderQueue

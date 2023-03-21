@@ -44,9 +44,13 @@ void ProductionManager::performBuildOrderSearch()
     {
         if (!m_bossManager.isSearchInProgress())
         {
+            std::cout << "BOSS search" << std::endl;
             m_bossManager.startNewSearch(Global::Strategy().getBuildOrderGoal());
         }
+        
     }
+    
+    //for(auto& BuildOrderQueueItem : m_queue)
 }
 
 void ProductionManager::update()
@@ -89,13 +93,13 @@ void ProductionManager::update()
         {
             if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 2)
             {
-                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
-                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
+                //m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
+                //m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
             }
 
             if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0)
             {
-                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
+                //m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
             }
         }
         else if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Terran)
@@ -119,6 +123,11 @@ void ProductionManager::update()
 
         m_enemyCloakedDetected = true;
     }
+    // if game is long add detectorunits
+    if (BWAPI::Broodwar->getFrameCount() > 60000 && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Observer) < 5 && m_queue.getNextHighestPriorityItem() != BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Observer), 0, true)) {
+        //m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Observer), true);
+    }
+    
 
     
 	m_bossManager.drawSearchInformation(490, 100);

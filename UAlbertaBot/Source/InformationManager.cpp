@@ -367,7 +367,13 @@ bool InformationManager::enemyHasCloakedUnits()
 	{
 		const UnitInfo & ui(kv.second);
 
-        if (ui.type.isCloakable())
+        if (ui.type.isCloakable()|| 
+            ui.type == BWAPI::UnitTypes::Terran_Vulture_Spider_Mine ||
+            ui.type == BWAPI::UnitTypes::Protoss_Dark_Templar ||
+            ui.type == BWAPI::UnitTypes::Protoss_Arbiter ||
+            ui.type == BWAPI::UnitTypes::Zerg_Lurker ||
+            ui.type == BWAPI::UnitTypes::Zerg_Lurker_Egg ||
+            ui.unit->isBurrowed())
         {
             return true;
         }

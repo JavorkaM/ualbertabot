@@ -77,6 +77,7 @@ public:
     void saveMapToFile(const std::string & path) const;
 
     BWAPI::TilePosition getLeastRecentlySeenTile() const;
+    BWAPI::TilePosition MapTools::getLeastRecentlySeenTileEnemy() const;
 
     // returns a list of all tiles on the map, sorted by 4-direcitonal walk distance from the given position
     const std::vector<BWAPI::TilePosition> & getClosestTilesTo(const BWAPI::TilePosition & tilePos) const;

@@ -281,3 +281,7 @@ bool BaseLocation::isMineralOnly() const
 {
     return getGeysers().empty();
 }
+int BaseLocation::getID() const 
+{
+    return m_baseID;
+}

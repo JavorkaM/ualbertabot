@@ -531,7 +531,7 @@ BWAPI::Position CombatCommander::getMainAttackLocation()
     }
 
     // Fourth choice: We can't see anything so explore the map attacking along the way
-    return BWAPI::Position(Global::Map().getLeastRecentlySeenTile());
+    return BWAPI::Position(Global::Map().getLeastRecentlySeenTileEnemy());
 }
 
 BWAPI::Unit CombatCommander::findClosestWorkerToTarget(BWAPI::Unitset & unitsToAssign, BWAPI::Unit target)

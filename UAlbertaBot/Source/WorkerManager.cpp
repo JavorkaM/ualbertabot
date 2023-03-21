@@ -33,7 +33,7 @@ void WorkerManager::onFrame()
 void WorkerManager::updateWorkerStatus()
 {
     PROFILE_FUNCTION();
-
+    //std::cout << "updateWorkerStatus" << std::endl;
     // for each of our Workers
     for (auto & worker : m_workerData.getWorkers())
     {
@@ -48,7 +48,7 @@ void WorkerManager::updateWorkerStatus()
             (m_workerData.getWorkerJob(worker) != WorkerData::Move) &&
             (m_workerData.getWorkerJob(worker) != WorkerData::Scout))
         {
-            m_workerData.setWorkerJob(worker, WorkerData::Idle, nullptr);
+            m_workerData.setWorkerJob(worker, WorkerData::Minerals, nullptr);
         }
 
         // if its job is gas
@@ -61,8 +61,29 @@ void WorkerManager::updateWorkerStatus()
             {
                 setMineralWorker(worker);
             }
+            if (m_workerData.getWorkers().size() < 3 || m_workerData.getNumMineralWorkers() <= m_workerData.getNumGasWorkers()) {
+                m_workerData.setWorkerJob(worker, WorkerData::Minerals, getClosestDepot(worker));
+            }
         }
     }
+}
+
+void WorkerManager::setWorkersToScout()
+{
+    std::cout << "setWorkersToScout" << std::endl;
+    int count = 0;
+    for (auto& worker : m_workerData.getWorkers())
+    {
+        if (!worker->isCompleted())
+        {
+            continue;
+        }
+        if (m_workerData.getNumMineralWorkers() > 5) {
+            count++;
+            setScoutWorker(worker);
+        }
+    }
+    std::cout << count << std::endl;
 }
 
 void WorkerManager::setRepairWorker(BWAPI::Unit worker, BWAPI::Unit unitToRepair)
@@ -296,7 +317,7 @@ void WorkerManager::setMineralWorker(BWAPI::Unit unit)
 
     // check if there is a mineral available to send the worker to
     BWAPI::Unit depot = getClosestDepot(unit);
-
+    // TODO
     // if there is a valid mineral
     if (depot)
     {

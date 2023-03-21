@@ -48,6 +48,7 @@ public:
     bool isOccupiedByPlayer(BWAPI::Player player) const;
     bool isExplored() const;
     bool isInResourceBox(int x, int y) const;
+    int getID() const;
 
     void setPlayerOccupying(BWAPI::Player player, bool occupying);
 
