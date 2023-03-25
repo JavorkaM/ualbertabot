@@ -215,10 +215,6 @@ const MetaPairVector StrategyManager::getProtossBuildOrderGoal() const
         }
     }
 
-
-    std::cout << "completed robotics: " << BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility) << std::endl;
-    std::cout << "all robotics: " << BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility) << std::endl;
-
     if (BWAPI::Broodwar->getFrameCount() > 70000 && BWAPI::Broodwar->self()->getUnits().size() > 20) {
         Global::Workers().setWorkersToScout();
     }

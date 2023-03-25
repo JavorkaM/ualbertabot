@@ -80,5 +80,8 @@ public:
 
     // overload the bracket operator for ease of use
     BuildOrderItem operator [] (int i);
+
+    bool anyInQueue(BWAPI::UnitType type) const;
+
 };
 }

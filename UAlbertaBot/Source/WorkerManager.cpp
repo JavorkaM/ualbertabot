@@ -41,6 +41,7 @@ void WorkerManager::updateWorkerStatus()
         {
             continue;
         }
+        //std::cout << m_workerData.getWorkerJob(worker) << std::endl;
 
         // if it's idle
         if (worker->isIdle() &&

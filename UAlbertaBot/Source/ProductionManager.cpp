@@ -127,9 +127,83 @@ void ProductionManager::update()
     if (BWAPI::Broodwar->getFrameCount() > 60000 && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Observer) < 5 && m_queue.getNextHighestPriorityItem() != BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Observer), 0, true)) {
         //m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Observer), true);
     }
+
+    int enemyCombatUnitCount = 0;
+    int selfCombatUnitCount = 0;
+    double closestDist = 100000;
+    BWAPI::Position depotPosition;
+
+
+    for (auto& unit : BWAPI::Broodwar->self()->getUnits())
+    {   
+        if (unit->getType() == BWAPI::UnitTypes::Protoss_Nexus) {
+            depotPosition = unit->getPosition();
+        }
+    }
+
+    for (auto& unit : BWAPI::Broodwar->enemy()->getUnits())
+    {
+        if (unit->getType() == BWAPI::UnitTypes::None || unit->getType() == BWAPI::UnitTypes::Unknown ||
+            unit->getType().isBuilding() || unit->getType() == BWAPI::UnitTypes::Protoss_Probe ||
+            unit->getType() == BWAPI::UnitTypes::Terran_SCV || unit->getType() == BWAPI::UnitTypes::Zerg_Drone)
+            continue;
+        
+        
+        double distance = unit->getDistance(depotPosition);
+
+        if (closestDist > distance) {
+            closestDist = distance;
+        }
+        enemyCombatUnitCount++;
+    }
+    for (auto& unit : BWAPI::Broodwar->self()->getUnits())
+    {
+        if (unit->getType() == BWAPI::UnitTypes::None || unit->getType() == BWAPI::UnitTypes::Unknown ||
+            unit->getType().isBuilding() || unit->getType() == BWAPI::UnitTypes::Protoss_Probe ||
+            unit->getType() == BWAPI::UnitTypes::Terran_SCV || unit->getType() == BWAPI::UnitTypes::Zerg_Drone ||
+            unit->getType() == BWAPI::UnitTypes::Protoss_Observer )
+            continue;
+
+        selfCombatUnitCount++;
+    }
+
+
+
+    /*std::cout << selfCombatUnitCount;
+    std::cout << " vs. ";
+    std::cout << enemyCombatUnitCount << std::endl;
+    std::cout << "distance";
+    std::cout << closestDist << std::endl;
+    std::cout << "Forge Num: ";
+    std::cout << BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) << std::endl;
+    std::cout << "Forge in queue?: ";
+    std::cout << m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) << std::endl;
+    std::cout << "Forge being built?: ";
+    std::cout << m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge) << std::endl;*/
+
+
+    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 1650)
+    {
+        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 2 
+            && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
+            && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0)
+        {
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
+        }
+    }
+    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 2300)
+    {
+        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0 && 
+            !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&
+            !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
+        {
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
+        }
+    }
     
 
-    
+   
 	m_bossManager.drawSearchInformation(490, 100);
     m_bossManager.drawStateInformation(250, 0);
 }

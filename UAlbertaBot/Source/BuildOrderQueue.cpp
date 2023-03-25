@@ -193,3 +193,17 @@ void BuildOrderQueue::drawQueueInformation(int x, int y)
         BWAPI::Broodwar->drawTextScreen(x, y+(i*10), " %s%s", prefix.c_str(), type.getName().c_str());
     }
 }
+
+
+
+bool BuildOrderQueue::anyInQueue(BWAPI::UnitType type) const
+{
+    for (const auto& item : queue)
+    {
+        if (item.metaType.getUnitType() == type)
+        {
+            return true;
+        }
+    }
+    return false;
+}

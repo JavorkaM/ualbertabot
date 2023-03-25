@@ -198,7 +198,13 @@ BWAPI::TilePosition BuildingPlacerManager::getBuildLocationNear(const Building &
     PROFILE_FUNCTION();
 
     // get the precomputed vector of tile positions which are sorted closes to this location
-    const std::vector<BWAPI::TilePosition> & closestToBuilding = Global::Map().getClosestTilesTo(b.desiredPosition);
+    const std::vector<BWAPI::TilePosition>& closestToBuilding = Global::Map().getClosestTilesTo(b.desiredPosition);
+    
+    if (b.type == BWAPI::UnitTypes::Protoss_Photon_Cannon) {
+        // TODO get closest chokepoint
+        //closestToBuilding = Global::Map().getClosestTilesTo(); //get closest 
+        
+    }
 
     // special easy case of having no pylons
     int numPylons = BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Pylon);
