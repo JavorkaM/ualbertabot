@@ -5,6 +5,7 @@
 #include "Grid.hpp"
 
 #include "stardraft/StarDraft.h"
+#include "../../BWEM 1.4.1/src/bwem.h"
 
 namespace UAlbertaBot
 {
@@ -82,6 +83,8 @@ public:
     // returns a list of all tiles on the map, sorted by 4-direcitonal walk distance from the given position
     const std::vector<BWAPI::TilePosition> & getClosestTilesTo(const BWAPI::TilePosition & tilePos) const;
     const std::vector<BWAPI::TilePosition> & getClosestTilesTo(const BWAPI::Position & pos) const;
+
+    static BWAPI::TilePosition MapTools::findCLosestChokepointPos();
 };
 
 }

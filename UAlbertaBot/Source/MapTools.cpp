@@ -2,12 +2,17 @@
 #include "BaseLocationManager.h"
 #include "Global.h"
 
+#include "../../BWEM 1.4.1/src/bwem.h"
+
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <array>
 
+
+
 using namespace UAlbertaBot;
+namespace { auto& theMap = BWEM::Map::Instance(); }
 
 const size_t LegalActions = 4;
 const int actionX[LegalActions] ={1, -1, 0, 0};
@@ -79,6 +84,14 @@ void MapTools::onStart()
     // compute the map connectivity
     computeConnectivity();
     computeMap();
+
+    
+
+
+    theMap.Initialize();
+    theMap.EnableAutomaticPathAnalysis();
+    bool startingLocationsOK = theMap.FindBasesForStartingLocations();
+    UAB_ASSERT(startingLocationsOK, "Starting locations not OK");
 }
 
 void MapTools::onFrame()
@@ -558,4 +571,33 @@ void MapTools::saveMapToFile(const std::string & path) const
     std::string mapFile = BWAPI::Broodwar->mapFileName();
     std::replace( mapFile.begin(), mapFile.end(), ' ', '_'); 
     getStarDraftMap().save(mapFile + ".txt");
+}
+
+
+BWAPI::TilePosition MapTools::findCLosestChokepointPos()
+{
+    BWAPI::TilePosition startLocation = BWAPI::Broodwar->self()->getStartLocation();
+    const BWEM::Area* ourArea = theMap.GetNearestArea(startLocation);
+    std::cout << "ChokepointS" << std::endl;
+    BWAPI::TilePosition closestChokepoint;
+    int distanceFromHome, minDistance = 100000;
+
+    for (auto& chokepoint : ourArea->ChokePoints()) {
+
+        std::cout << chokepoint->Center().x << ":" << chokepoint->Center().y << std::endl;
+        std::cout << chokepoint->Pos(chokepoint->middle).x/4 << ":" << chokepoint->Pos(chokepoint->middle).y/4 << std::endl;
+        BWAPI::TilePosition pos = BWAPI::TilePosition(chokepoint->Pos(chokepoint->middle).x /4 , chokepoint->Pos(chokepoint->middle).y /4);
+        
+        distanceFromHome = pos.getDistance(startLocation);
+        
+        if (!closestChokepoint || distanceFromHome < minDistance)
+        {
+            closestChokepoint = pos;
+            minDistance = distanceFromHome;
+        }
+
+    }
+    std::cout << closestChokepoint.x << ":" << closestChokepoint.y << std::endl;
+
+    return closestChokepoint;
 }

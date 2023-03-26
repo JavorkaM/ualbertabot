@@ -5,6 +5,8 @@
 #include "BuildingData.h"
 #include "Global.h"
 #include "MapTools.h"
+#include "MapTools.h"
+#include "../../BWEM 1.4.1/src/bwem.h"
 
 using namespace UAlbertaBot;
 
@@ -196,15 +198,26 @@ BWAPI::TilePosition BuildingPlacerManager::GetBuildLocation(const Building & b, 
 BWAPI::TilePosition BuildingPlacerManager::getBuildLocationNear(const Building & b, int buildDist, bool horizontalOnly) const
 {
     PROFILE_FUNCTION();
-
     // get the precomputed vector of tile positions which are sorted closes to this location
-    const std::vector<BWAPI::TilePosition>& closestToBuilding = Global::Map().getClosestTilesTo(b.desiredPosition);
     
-    if (b.type == BWAPI::UnitTypes::Protoss_Photon_Cannon) {
-        // TODO get closest chokepoint
-        //closestToBuilding = Global::Map().getClosestTilesTo(); //get closest 
-        
+    if (b.type == BWAPI::UnitTypes::Protoss_Photon_Cannon && ) {
+        // get closest chokepoint through BWEM
+        BWAPI::TilePosition closestChokepoint = UAlbertaBot::MapTools::findCLosestChokepointPos();
+
+        const std::vector<BWAPI::TilePosition>& closestToChokePoint = Global::Map().getClosestTilesTo(closestChokepoint);
+
+        for (size_t i = 0; i < closestToChokePoint.size(); ++i)
+        {
+            if (canBuildHereWithSpace(closestToChokePoint[i], b, buildDist, horizontalOnly) &&
+                BWAPI::Broodwar->hasPower(closestToChokePoint[i].x, closestToChokePoint[i].y))
+            {
+
+                return closestToChokePoint[i];
+            }
+        }
     }
+
+    const std::vector<BWAPI::TilePosition>& closestToBuilding = Global::Map().getClosestTilesTo(b.desiredPosition);
 
     // special easy case of having no pylons
     int numPylons = BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Pylon);
