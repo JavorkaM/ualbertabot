@@ -182,18 +182,17 @@ void ProductionManager::update()
     std::cout << m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge) << std::endl;*/
 
 
-    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 1850)
+    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 1850 || closestDist < 1200)
     {
         if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 2 
-            && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge)
+            && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
             && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0 
             && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
         {
             m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
-            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
         }
     }
-    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 2300)
+    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 2300 || closestDist < 1850)
     {
         if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0 && 
             !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&

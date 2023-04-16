@@ -52,8 +52,9 @@ void DetectorManager::executeMicro(const BWAPI::Unitset & targets)
         // if we need to regroup, move the detectorUnit to that location
         if (BWAPI::Broodwar->getFrameCount() > 70000) {
             std::vector<const BaseLocation*> baseLocations = Global::Bases().getBaseLocations();
-            if (!(baseLocations[std::rand() % (baseLocations.size() - 0 + 1)]))
-                Micro::SmartMove(detectorUnit, BWAPI::Position(baseLocations[std::rand() % (baseLocations.size() - 0 + 1)]->getPosition()));
+            auto& baseToMove = baseLocations[std::rand() % (baseLocations.size())];
+            if (!baseToMove)
+                Micro::SmartMove(detectorUnit, baseToMove->getPosition());
 
         }
         else if ((!detectorUnitInBattle && unitClosestToEnemy && unitClosestToEnemy->getPosition().isValid()) || Global::Info().enemyHasCloakedUnits() && unitClosestToEnemy)

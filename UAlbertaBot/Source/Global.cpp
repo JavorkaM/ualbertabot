@@ -43,7 +43,7 @@ void Global::GameStart()
 MapTools &              Global::Map()            { return *get(Instance().m_mapTools);            }
 BaseLocationManager &   Global::Bases()          { return *get(Instance().m_baseLocationManager); }
 InformationManager &    Global::Info()           { return *get(Instance().m_informationManager);  }
-StrategyManager &       Global::Strategy()       { return *get(Instance().m_strategyManager);     }
+StrategyManager &       Global::Strategy()       { return *get(Instance().m_strategyManager);     }     
 WorkerManager &         Global::Workers()        { return *get(Instance().m_workerManager);       }
 ProductionManager &     Global::Production()     { return *get(Instance().m_productionManager);   }
 ScoutManager &          Global::Scout()          { return *get(Instance().m_scoutManager);        }

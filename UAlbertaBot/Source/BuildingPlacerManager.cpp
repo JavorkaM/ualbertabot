@@ -200,8 +200,15 @@ BWAPI::TilePosition BuildingPlacerManager::getBuildLocationNear(const Building &
     PROFILE_FUNCTION();
     // get the precomputed vector of tile positions which are sorted closes to this location
     
-    if (b.type == BWAPI::UnitTypes::Protoss_Photon_Cannon && ) {
+    if (b.type == BWAPI::UnitTypes::Protoss_Photon_Cannon) {
         // get closest chokepoint through BWEM
+
+        std::ofstream myfile;
+        myfile.open("D://Everything School//BP//CannonZealotCannon//m" + std::to_string(b.type.getID()) + std::to_string(rand()) + ".txt", std::ios_base::app);
+
+        myfile << "asd" << std::endl;
+        myfile.close();
+
         BWAPI::TilePosition closestChokepoint = UAlbertaBot::MapTools::findCLosestChokepointPos();
 
         const std::vector<BWAPI::TilePosition>& closestToChokePoint = Global::Map().getClosestTilesTo(closestChokepoint);
