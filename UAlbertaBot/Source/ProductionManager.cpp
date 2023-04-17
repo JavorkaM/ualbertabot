@@ -93,13 +93,13 @@ void ProductionManager::update()
         {
             if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 2)
             {
-                //m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
+                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
                 //m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
             }
 
             if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0)
             {
-                //m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
+                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
             }
         }
         else if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Terran)
@@ -133,6 +133,10 @@ void ProductionManager::update()
     double closestDist = 100000;
     BWAPI::Position depotPosition;
 
+    bool enemy_has_Archives = false;
+    bool enemy_has_Citadel = false;
+    int Zerg_Hatchery_Count = 0;
+
 
     for (auto& unit : BWAPI::Broodwar->self()->getUnits())
     {   
@@ -143,6 +147,16 @@ void ProductionManager::update()
 
     for (auto& unit : BWAPI::Broodwar->enemy()->getUnits())
     {
+        if (unit->getType() == BWAPI::UnitTypes::Protoss_Templar_Archives)
+            enemy_has_Archives = true;
+
+        if (unit->getType() == BWAPI::UnitTypes::Protoss_Citadel_of_Adun)
+            enemy_has_Citadel = true;
+
+        if (unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery)
+            Zerg_Hatchery_Count++;
+
+
         if (unit->getType() == BWAPI::UnitTypes::None || unit->getType() == BWAPI::UnitTypes::Unknown ||
             unit->getType().isBuilding() || unit->getType() == BWAPI::UnitTypes::Protoss_Probe ||
             unit->getType() == BWAPI::UnitTypes::Terran_SCV || unit->getType() == BWAPI::UnitTypes::Zerg_Drone)
@@ -182,9 +196,9 @@ void ProductionManager::update()
     std::cout << m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge) << std::endl;*/
 
 
-    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 1850 || closestDist < 1200)
+    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 1850 || closestDist < 1150)
     {
-        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 2 
+        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 1 
             && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
             && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0 
             && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
@@ -192,7 +206,7 @@ void ProductionManager::update()
             m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
         }
     }
-    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 2300 || closestDist < 1850)
+    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 2300 || closestDist < 1600)
     {
         if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0 && 
             !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&
@@ -201,6 +215,43 @@ void ProductionManager::update()
             m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
         }
     }
+
+
+// Checking for Dark Templar - Protoss
+// Chcking for fast Zerg rush
+
+    if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0 &&
+        !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&
+        !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
+    {
+        if (enemy_has_Archives ) {
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
+        }
+        if (enemy_has_Citadel || (Zerg_Hatchery_Count > 1 && BWAPI::Broodwar->getFrameCount() < 5000)) {
+            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Forge), 2, true, false));
+        }
+
+    }
+
+    if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 1
+        && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
+        && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0
+        && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
+    {
+        if (enemy_has_Archives) {
+            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), 2, true, false));
+        }
+    }
+
+
+
+    
+
+    
+
+
+
+
     
 
    

@@ -51,6 +51,52 @@ void ScoutManager::drawScoutInformation(int x, int y)
     BWAPI::Broodwar->drawTextScreen(x, y+10, "GasSteal: %s", m_gasStealStatus.c_str());
 }
 
+void ScoutManager::followPerimeter(const BaseLocation* enemyBaseLocation)
+{
+    // Get the BWEM map instance
+    const BWEM::Map& mapa = BWEM::Map::Instance();
+
+    // Find the closest choke point to the enemy starting location
+    const BWEM::ChokePoint* closestChokepoint = nullptr;
+    int closestChokeDist = INT_MAX;
+
+    for (const auto& choke : (mapa.GetArea(enemyBaseLocation->getDepotPosition()))->ChokePoints())
+    {
+        const int dist = enemyBaseLocation->getGroundDistance(BWAPI::TilePosition(choke->Center()));
+        if (dist < closestChokeDist)
+        {
+            closestChokeDist = dist;
+            closestChokepoint = choke;
+        }
+    }
+
+    if (closestChokepoint)
+    {
+        // Move the scout betweeb enemy base and enemy choke point
+        const BWAPI::Position scoutPos = m_workerScout->getPosition();
+        const BWAPI::Position chokePos = BWAPI::Position(closestChokepoint->Center());
+        const BWAPI::Position enemyBasePos = enemyBaseLocation->getPosition();
+
+        if (m_scoutStatus == "Enemy Base" && scoutPos.getDistance(enemyBasePos) < 50)
+        {
+            m_scoutStatus = "Enemy choke";
+        }
+        else if (m_scoutStatus == "Enemy choke" && scoutPos.getDistance(chokePos) < 50)
+        {
+            m_scoutStatus = "Enemy Base";
+        }
+
+        if (m_scoutStatus == "Enemy Base")
+        {
+            Micro::SmartMove(m_workerScout, enemyBasePos);
+        }
+        else if (m_scoutStatus == "Enemy choke")
+        {
+            Micro::SmartMove(m_workerScout, chokePos);
+        }
+    }
+}
+
 void ScoutManager::moveScouts()
 {
     if (!m_workerScout || !m_workerScout->exists() || !(m_workerScout->getHitPoints() > 0))
@@ -64,10 +110,6 @@ void ScoutManager::moveScouts()
         if (!(baseLocations[std::rand() % (baseLocations.size() - 0 + 1)]))
             Micro::SmartMove(m_workerScout, BWAPI::Position(baseLocations[std::rand() % (baseLocations.size() - 0 + 1)]->getPosition()));
 
-        std::ofstream newfile;
-        newfile.open("D://Everything School//BP//WorkerBreakPoint//m" + std::to_string(num) + ".txt", std::ios_base::app);
-        newfile << "Here\n";
-        newfile.close();
         num++;
         return;
     }
@@ -153,7 +195,8 @@ void ScoutManager::moveScouts()
                 else
                 {
                     m_scoutStatus = "Following perimeter";
-                    Micro::SmartMove(m_workerScout, BWAPI::Position(enemyBaseLocation->getPosition()));
+                    //Micro::SmartMove(m_workerScout, BWAPI::Position(enemyBaseLocation->getPosition()));
+                    followPerimeter(enemyBaseLocation);
                 }
 
             }
