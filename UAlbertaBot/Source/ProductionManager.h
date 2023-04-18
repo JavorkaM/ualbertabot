@@ -24,8 +24,10 @@ class ProductionManager
     bool                m_assignedWorkerForThisBuilding = false;
     bool                m_haveLocationForThisBuilding   = false;
 
+
     BWAPI::Unit         getClosestUnitToPosition(const BWAPI::Unitset & units, BWAPI::Position closestTo);
     BWAPI::Unit         selectUnitOfType(BWAPI::UnitType type, BWAPI::Position closestTo = BWAPI::Position(0, 0));
+
 
     void setBuildOrder(const BuildOrder & buildOrder);
     void create(BWAPI::Unit producer, BuildOrderItem & item);
@@ -40,7 +42,10 @@ class ProductionManager
     bool canMakeNow(BWAPI::Unit producer, MetaType t);
     bool meetsReservedResources(MetaType type);
     
+    
     ProductionManager();
+
+    void initUnitRatings();
 
 public:
 

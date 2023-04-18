@@ -6,12 +6,74 @@
 #include "BOSSManager.h"
 #include "InformationManager.h"
 #include "WorkerManager.h"
+#include <map>
+#include <string>
+#include <string>
 
 using namespace UAlbertaBot;
+
+struct UnitRatings {
+    double strength;
+};
+
+std::map<std::string, UnitRatings> unitRatings;
+
 
 ProductionManager::ProductionManager()
 {
     setBuildOrder(Global::Strategy().getOpeningBookBuildOrder());
+    initUnitRatings();
+}
+
+
+// Function to initialize the unit ratings
+void ProductionManager::initUnitRatings() {
+    // Terran units
+    unitRatings["Terran_Marine"] = { 0.6 };
+    unitRatings["Terran_Firebat"] = { 0.8 };
+    unitRatings["Terran_Medic"] = { 0.5 };
+    unitRatings["Terran_Ghost"] = { 0.7 };
+    unitRatings["Terran_Vulture"] = { 1.1 };
+    unitRatings["Terran_Siege_Tank"] = { 0.8 };
+    unitRatings["Terran_Goliath"] = { 0.9 };
+    unitRatings["Terran_Wraith"] = { 0.6 };
+    unitRatings["Terran_Science_Vessel"] = { 0.5 };
+    unitRatings["Terran_Battlecruiser"] = { 0.7 };
+
+    // Zerg units
+    unitRatings["Zerg_Zergling"] = { 0.6 };
+    unitRatings["Zerg_Hydralisk"] = { 1.2 };
+    unitRatings["Zerg_Lurker"] = { 1.5 };
+    unitRatings["Zerg_Ultralisk"] = { 1.1 };
+    unitRatings["Zerg_Mutalisk"] = { 1.4 };
+    unitRatings["Zerg_Guardian"] = { 1.3 };
+    unitRatings["Zerg_Scourge"] = { 1.8 };
+    unitRatings["Zerg_Devourer"] = { 1.2 };
+
+    // Protoss units
+    unitRatings["Protoss_Zealot"] = { 0.8 };
+    unitRatings["Protoss_Dragoon"] = { 1.3 };
+    unitRatings["Protoss_High_Templar"] = { 0.5 };
+    unitRatings["Protoss_Dark_Templar"] = { 1.5 };
+    unitRatings["Protoss_Archon"] = { 1.2 };
+    unitRatings["Protoss_Scout"] = { 0.9 };
+    unitRatings["Protoss_Corsair"] = { 1.0 };
+    unitRatings["Protoss_Observer"] = { 0.5 };
+    unitRatings["Protoss_Shuttle"] = { 0.5 };
+    unitRatings["Protoss_Reaver"] = { 1.4 };
+    unitRatings["Protoss_Carrier"] = { 1.1 };
+}
+
+// Function to get the rating for a unit given its name
+double getUnitRating(std::string unitName) {
+    if (unitRatings.count(unitName) == 0) {
+        // Unit not found
+        return -1.0;
+    }
+    else {
+        // Unit found, return its rating
+        return unitRatings[unitName].strength;
+    }
 }
 
 void ProductionManager::setBuildOrder(const BuildOrder & buildOrder)
@@ -128,8 +190,8 @@ void ProductionManager::update()
         //m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Observer), true);
     }
 
-    int enemyCombatUnitCount = 0;
-    int selfCombatUnitCount = 0;
+    double enemyCombatUnitCount = 0;
+    double selfCombatUnitCount = 0;
     double closestDist = 100000;
     BWAPI::Position depotPosition;
 
@@ -168,7 +230,11 @@ void ProductionManager::update()
         if (closestDist > distance) {
             closestDist = distance;
         }
-        enemyCombatUnitCount++;
+        double unitRating = getUnitRating(unit->getType().getName());
+        if(unitRating >= 0)
+            enemyCombatUnitCount += unitRating;
+        else
+            std::cout << "unit not found in rating" << std::endl;
     }
     for (auto& unit : BWAPI::Broodwar->self()->getUnits())
     {
@@ -178,7 +244,11 @@ void ProductionManager::update()
             unit->getType() == BWAPI::UnitTypes::Protoss_Observer )
             continue;
 
-        selfCombatUnitCount++;
+        double unitRating = getUnitRating(unit->getType().getName());
+        if (unitRating >= 0)
+            selfCombatUnitCount += unitRating;
+        else
+            std::cout << "unit not found in rating" << std::endl;
     }
 
 
@@ -196,7 +266,7 @@ void ProductionManager::update()
     std::cout << m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge) << std::endl;*/
 
 
-    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 1850 || closestDist < 1150)
+    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 1850)
     {
         if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 1 
             && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
@@ -206,7 +276,7 @@ void ProductionManager::update()
             m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
         }
     }
-    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 2300 || closestDist < 1600)
+    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 2300)
     {
         if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0 && 
             !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&
