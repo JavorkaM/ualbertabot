@@ -41,7 +41,12 @@ ChokePoint::ChokePoint(detail::Graph * pGraph, index idx, const Area * area1, co
 	bwem_assert(!Geometry.empty());
 
 	// Ensures that in the case where several neutrals are stacked, m_pBlockingNeutral points to the bottom one: 
-	if (m_pBlockingNeutral) m_pBlockingNeutral = GetMap()->GetTile(m_pBlockingNeutral->TopLeft()).GetNeutral();
+	if (m_pBlockingNeutral) {
+		m_pBlockingNeutral = GetMap()->GetTile(m_pBlockingNeutral->TopLeft()).GetNeutral();
+		BWAPI::Broodwar->drawCircleMap(m_pBlockingNeutral->Pos(), 32, BWAPI::Color(255, 255, 255), true);
+	}
+
+
 
 	m_nodes[end1] = Geometry.front();
 	m_nodes[end2] = Geometry.back();

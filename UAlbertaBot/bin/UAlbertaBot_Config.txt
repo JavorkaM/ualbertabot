@@ -80,7 +80,7 @@
     
     "Strategy" :
     {
-        "Protoss"                   : "Protoss_SHDragoon",
+        "Protoss"                   : "Protoss_ZealotRush",
         "Terran"                    : "Terran_MarineRush",
         "Zerg"                      : "Zerg_ZerglingRush",
         

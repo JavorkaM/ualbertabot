@@ -41,14 +41,14 @@ void ProductionManager::initUnitRatings() {
     unitRatings["Terran_Battlecruiser"] = { 0.7 };
 
     // Zerg units
-    unitRatings["Zerg_Zergling"] = { 0.6 };
-    unitRatings["Zerg_Hydralisk"] = { 1.2 };
-    unitRatings["Zerg_Lurker"] = { 1.5 };
-    unitRatings["Zerg_Ultralisk"] = { 1.1 };
-    unitRatings["Zerg_Mutalisk"] = { 1.4 };
-    unitRatings["Zerg_Guardian"] = { 1.3 };
-    unitRatings["Zerg_Scourge"] = { 1.8 };
-    unitRatings["Zerg_Devourer"] = { 1.2 };
+    unitRatings["Zerg_Zergling"] = { 0.4 };
+    unitRatings["Zerg_Hydralisk"] = { 0.8 };
+    unitRatings["Zerg_Lurker"] = { 1.2 };
+    unitRatings["Zerg_Ultralisk"] = { 0.8 };
+    unitRatings["Zerg_Mutalisk"] = { 1.1 };
+    unitRatings["Zerg_Guardian"] = { 1.0 };
+    unitRatings["Zerg_Scourge"] = { 0.7 };
+    unitRatings["Zerg_Devourer"] = { 0.9 };
 
     // Protoss units
     unitRatings["Protoss_Zealot"] = { 0.8 };
@@ -198,10 +198,11 @@ void ProductionManager::update()
     bool enemy_has_Archives = false;
     bool enemy_has_Citadel = false;
     int Zerg_Hatchery_Count = 0;
+    int Zerg_Spawning_Pool_Count = 0;
 
 
     for (auto& unit : BWAPI::Broodwar->self()->getUnits())
-    {   
+    {
         if (unit->getType() == BWAPI::UnitTypes::Protoss_Nexus) {
             depotPosition = unit->getPosition();
         }
@@ -217,38 +218,44 @@ void ProductionManager::update()
 
         if (unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery)
             Zerg_Hatchery_Count++;
+        
+        if (unit->getType() == BWAPI::UnitTypes::Zerg_Spawning_Pool)
+            Zerg_Spawning_Pool_Count++;
 
 
         if (unit->getType() == BWAPI::UnitTypes::None || unit->getType() == BWAPI::UnitTypes::Unknown ||
             unit->getType().isBuilding() || unit->getType() == BWAPI::UnitTypes::Protoss_Probe ||
             unit->getType() == BWAPI::UnitTypes::Terran_SCV || unit->getType() == BWAPI::UnitTypes::Zerg_Drone)
             continue;
-        
-        
+
+
         double distance = unit->getDistance(depotPosition);
 
         if (closestDist > distance) {
             closestDist = distance;
         }
         double unitRating = getUnitRating(unit->getType().getName());
-        if(unitRating >= 0)
+        if (unitRating >= 0)
             enemyCombatUnitCount += unitRating;
-        else
-            std::cout << "unit not found in rating" << std::endl;
+        else {
+            //std::cout << "unit not found in rating" << std::endl;
+        }
     }
     for (auto& unit : BWAPI::Broodwar->self()->getUnits())
     {
         if (unit->getType() == BWAPI::UnitTypes::None || unit->getType() == BWAPI::UnitTypes::Unknown ||
             unit->getType().isBuilding() || unit->getType() == BWAPI::UnitTypes::Protoss_Probe ||
             unit->getType() == BWAPI::UnitTypes::Terran_SCV || unit->getType() == BWAPI::UnitTypes::Zerg_Drone ||
-            unit->getType() == BWAPI::UnitTypes::Protoss_Observer )
+            unit->getType() == BWAPI::UnitTypes::Protoss_Observer)
             continue;
 
         double unitRating = getUnitRating(unit->getType().getName());
         if (unitRating >= 0)
             selfCombatUnitCount += unitRating;
-        else
-            std::cout << "unit not found in rating" << std::endl;
+        else {
+            //std::cout << "unit not found in rating" << std::endl;
+        }
+
     }
 
 
@@ -266,19 +273,21 @@ void ProductionManager::update()
     std::cout << m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge) << std::endl;*/
 
 
-    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 1850)
+    if (enemyCombatUnitCount > selfCombatUnitCount && 
+        closestDist < 1850 + ((enemyCombatUnitCount - selfCombatUnitCount) * 200))
     {
-        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 1 
+        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 1
             && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
-            && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0 
+            && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0
             && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
         {
             m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
         }
     }
-    if (enemyCombatUnitCount > selfCombatUnitCount && closestDist < 2300)
+    if (enemyCombatUnitCount > selfCombatUnitCount && 
+        closestDist < 2350 + ((enemyCombatUnitCount - selfCombatUnitCount) * 200))
     {
-        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0 && 
+        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0 &&
             !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&
             !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
         {
@@ -287,26 +296,30 @@ void ProductionManager::update()
     }
 
 
-// Checking for Dark Templar - Protoss
-// Chcking for fast Zerg rush
+    // Checking for Dark Templar - Protoss
+    // Chcking for fast Zerg rush
 
     if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0 &&
         !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&
         !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
     {
-        if (enemy_has_Archives ) {
-            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
-        }
-        if (enemy_has_Citadel || (Zerg_Hatchery_Count > 1 && BWAPI::Broodwar->getFrameCount() < 5000)) {
+
+
+
+        if (enemy_has_Citadel || ((Zerg_Hatchery_Count > 1 || Zerg_Spawning_Pool_Count > 0) && BWAPI::Broodwar->getFrameCount() < 5000)) {
             m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Forge), 2, true, false));
         }
+        if (enemy_has_Archives && !enemy_has_Citadel) {
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
+        }
+
 
     }
 
     if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 1
         && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
-        && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0
-        && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
+        && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Photon_Cannon)
+        && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0)
     {
         if (enemy_has_Archives) {
             m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), 2, true, false));

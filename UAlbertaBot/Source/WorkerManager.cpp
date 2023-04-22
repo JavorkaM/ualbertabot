@@ -22,6 +22,8 @@ void WorkerManager::onFrame()
     handleMoveWorkers();
     handleCombatWorkers();
 
+    //updateThreeWorkers();
+
     drawResourceDebugInfo();
     drawWorkerInformation(450, 20);
 
@@ -29,6 +31,7 @@ void WorkerManager::onFrame()
 
     handleRepairWorkers();
 }
+
 
 void WorkerManager::updateWorkerStatus()
 {
@@ -41,15 +44,54 @@ void WorkerManager::updateWorkerStatus()
         {
             continue;
         }
-        //std::cout << m_workerData.getWorkerJob(worker) << std::endl;
-
+        if (m_workerData.getWorkers().size() < 3) {
+            std::cout << worker->getID() << ": ";
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Minerals)
+            {
+                std::cout << "Minerals worker" << std::endl;
+                continue;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Gas)
+            {
+                std::cout << "Gas worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Build)
+            {
+                std::cout << "Build worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Combat)
+            {
+                std::cout << "Combat worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Idle)
+            {
+                std::cout << "Idle worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Repair)
+            {
+                std::cout << "Repair worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Move)
+            {
+                std::cout << "Move worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Scout)
+            {
+                std::cout << "Scout worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Default)
+            {
+                std::cout << "Default worker" << std::endl;
+            }
+            setMineralWorker(worker);
+        }
         // if it's idle
         if (worker->isIdle() &&
             (m_workerData.getWorkerJob(worker) != WorkerData::Build) &&
             (m_workerData.getWorkerJob(worker) != WorkerData::Move) &&
             (m_workerData.getWorkerJob(worker) != WorkerData::Scout))
         {
-            m_workerData.setWorkerJob(worker, WorkerData::Minerals, nullptr);
+            m_workerData.setWorkerJob(worker, WorkerData::Minerals, m_workerData.getWorkerResource(worker));
         }
 
         // if its job is gas
@@ -65,6 +107,59 @@ void WorkerManager::updateWorkerStatus()
             if (m_workerData.getWorkers().size() < 3 || m_workerData.getNumMineralWorkers() <= m_workerData.getNumGasWorkers()) {
                 m_workerData.setWorkerJob(worker, WorkerData::Minerals, getClosestDepot(worker));
             }
+        }
+    }
+}
+
+
+void WorkerManager::updateThreeWorkers()
+{
+    PROFILE_FUNCTION();
+    for (auto& worker : m_workerData.getWorkers())
+    {
+        if (!worker->isCompleted())
+        {
+            continue;
+        }
+        if (m_workerData.getWorkers().size() < 3) {
+            std::cout << worker->getID() << ": ";
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Minerals)
+            {
+                std::cout << "Minerals worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Gas)
+            {
+                std::cout << "Gas worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Build)
+            {
+                std::cout << "Build worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Combat)
+            {
+                std::cout << "Combat worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Idle)
+            {
+                std::cout << "Idle worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Repair)
+            {
+                std::cout << "Repair worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Move)
+            {
+                std::cout << "Move worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Scout)
+            {
+                std::cout << "Scout worker" << std::endl;
+            }
+            if (m_workerData.getWorkerJob(worker) == WorkerData::Default)
+            {
+                std::cout << "Default worker" << std::endl;
+            }
+            setMineralWorker(worker);
         }
     }
 }
@@ -100,16 +195,29 @@ void WorkerManager::stopRepairing(BWAPI::Unit worker)
 void WorkerManager::handleGasWorkers()
 {
     // for each unit we have
-    for (auto & unit : BWAPI::Broodwar->self()->getUnits())
+    for (auto& unit : BWAPI::Broodwar->self()->getUnits())
     {
         // if that unit is a refinery
         if (unit->getType().isRefinery() && unit->isCompleted() && !isGasStealRefinery(unit))
         {
             // get the number of workers currently assigned to it
-            const int numAssigned = m_workerData.getNumAssignedWorkers(unit);
+            int numAssigned = m_workerData.getNumAssignedWorkers(unit);
+            const int numMineralWoker = m_workerData.getNumMineralWorkers();
+
+            int gasWor = (3 - numMineralWoker) * (-1);
+            if (gasWor < 0)
+            {
+                gasWor = 0;
+            }
+            else if (gasWor > 3)
+            {
+                gasWor = 3;
+            }
+
 
             // if it's less than we want it to be, fill 'er up
-            for (int i=0; i<(Config::Macro::WorkersPerRefinery-numAssigned); ++i)
+            //for (int i=0; i<(Config::Macro::WorkersPerRefinery-numAssigned); ++i)
+            for (int i = 0; i < (gasWor - numAssigned); ++i)
             {
                 BWAPI::Unit gasWorker = getGasWorker(unit);
                 if (gasWorker)
@@ -119,6 +227,7 @@ void WorkerManager::handleGasWorkers()
             }
         }
     }
+
 
 }
 

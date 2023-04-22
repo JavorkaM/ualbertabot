@@ -22,6 +22,7 @@ class WorkerManager
     void handleMoveWorkers();
     void handleCombatWorkers();
     void handleRepairWorkers();
+    void updateThreeWorkers();
 
     WorkerManager();
 

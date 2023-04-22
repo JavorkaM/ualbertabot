@@ -530,8 +530,40 @@ BWAPI::Position CombatCommander::getMainAttackLocation()
         }
     }
 
-    // Fourth choice: We can't see anything so explore the map attacking along the way
+    // Fourth choice: If we do not know enemy base location, explore start locations
+    /*if (!enemyBaseLocation) {
+        for (auto startLocation : BWAPI::Broodwar->getStartLocations())
+        {
+            // if we haven't explored it yet, explore it
+            if (!BWAPI::Broodwar->isExplored(startLocation) &&
+                !BWAPI::Broodwar->isVisible(startLocation)   )
+            {
+                bool explored = BWAPI::Broodwar->isExplored(startLocation);
+                bool visible = BWAPI::Broodwar->isVisible(startLocation);
+                std::cout << "visible: " << visible << std::endl;
+                std::cout << "explored: " << explored << std::endl;
+                BWAPI::Broodwar->drawCircleMap(BWAPI::Position(startLocation), 32, BWAPI::Colors::Purple);
+                
+                return BWAPI::Position(startLocation);;
+            }
+        }
+    }*/
+    
+    // Sixth choice: We can't see anything so explore the map attacking along the way
+    if(BWAPI::Broodwar->getFrameCount() > 65000)
+        return BWAPI::Position(Global::Map().getLeastRecentlySeenTileEnemy());
+
+    // Fifth choice: Check unchecked bases
+    if(enemyBaseLocation)
+        return BWAPI::Position(Global::Map().getLeastRecentlySeenBaseEnemy());
+    else if (BWAPI::Broodwar->getFrameCount() > 100)
+        return  BWAPI::Position(Global::Map().getLeastRecentlySeenBase());
+
     return BWAPI::Position(Global::Map().getLeastRecentlySeenTileEnemy());
+
+
+    
+
 }
 
 BWAPI::Unit CombatCommander::findClosestWorkerToTarget(BWAPI::Unitset & unitsToAssign, BWAPI::Unit target)

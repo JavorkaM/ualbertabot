@@ -134,7 +134,7 @@ private:
 
 	altitude_t							m_maxAltitude;
 
-	mutable bool						m_automaticPathUpdate = false;
+	mutable bool						m_automaticPathUpdate = true;
 
 	class Graph							m_Graph;
 	vector<unique_ptr<Mineral>>			m_Minerals;

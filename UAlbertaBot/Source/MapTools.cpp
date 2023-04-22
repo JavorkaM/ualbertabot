@@ -92,6 +92,24 @@ void MapTools::onStart()
     theMap.EnableAutomaticPathAnalysis();
     bool startingLocationsOK = theMap.FindBasesForStartingLocations();
     UAB_ASSERT(startingLocationsOK, "Starting locations not OK");
+
+    BWAPI::TilePosition startLocation = BWAPI::Broodwar->self()->getStartLocation();
+    const BWEM::Area* ourArea = theMap.GetNearestArea(startLocation);
+    auto& minerals = theMap.GetNearestArea(startLocation)->Bases().at(0).Minerals();
+    for (auto& chokepoint : ourArea->ChokePoints()) {
+        //auto & asd = chokepoint->BlockingNeutral();
+
+        //if (asd) {
+            //BWAPI::Broodwar->drawCircleMap(asd, 16, BWAPI::Color(255, 255, 255), true);
+        //}
+        /*if (minerals.size() != 0) {
+            for (int i = 0; i < minerals.size(); i++) {
+                std::cout << i;
+                BWAPI::Broodwar->drawCircleMap(minerals.at(i)->Pos(), 16, BWAPI::Color(255, 255, 255), true);
+            }
+        }*/
+    }
+        
 }
 
 void MapTools::onFrame()
@@ -465,6 +483,140 @@ BWAPI::TilePosition MapTools::getLeastRecentlySeenTileEnemy() const
     return leastSeen;
 }
 
+double getDistance(BWAPI::Position p1, BWAPI::Position  p2) {
+    return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
+}
+
+const std::vector<const BaseLocation*> sortBaseLocationsByDistance(const BaseLocation* enemyBase) {
+    const std::vector<const BaseLocation*> baseLocations(Global::Bases().getBaseLocations());
+    std::vector<const BaseLocation*> baseLocationsCopy = baseLocations;
+    std::sort(baseLocationsCopy.begin(), baseLocationsCopy.end(), [enemyBase](const BaseLocation* a, const BaseLocation* b) {
+        double distanceToA = getDistance(enemyBase->getPosition(), a->getPosition());
+        double distanceToB = getDistance(enemyBase->getPosition(), b->getPosition());
+        return distanceToA < distanceToB;
+    });
+    return baseLocationsCopy;
+}
+
+BWAPI::TilePosition MapTools::getLeastRecentlySeenBaseEnemy() const
+{
+    int minSeen = std::numeric_limits<int>::max();
+    BWAPI::TilePosition leastSeen;
+    const BaseLocation* baseLocation = Global::Bases().getPlayerStartingBaseLocation(BWAPI::Broodwar->self());
+    const BaseLocation* enemyBaseLocation = Global::Bases().getPlayerStartingBaseLocation(BWAPI::Broodwar->enemy());
+    const std::vector<const BaseLocation*> bases = sortBaseLocationsByDistance(Global::Bases().getPlayerStartingBaseLocation(BWAPI::Broodwar->enemy()));
+    
+    UAB_ASSERT(baseLocation, "Null baselocation is insanely ");
+    int leastSeenBaseIndex;
+    int i = 0;
+    bool blocked = false;
+    int lenght;
+    for (auto& base : bases)
+    {
+        UAB_ASSERT(base, "Null base is interesting ");
+        lenght = -1;
+
+        const BWEM::CPPath path = theMap.GetPath(baseLocation->getPosition(), base->getPosition(), &lenght);
+
+        for (auto& choke : path) {
+
+            if (choke->Blocked() || !choke->AccessibleFrom(findCLosestChokepoint())) {
+                blocked = true;
+            }
+        }
+        if (blocked || lenght == -1) {
+            BWAPI::Broodwar->drawCircleMap(base->getPosition().x, base->getPosition().x, 48, BWAPI::Color(255, 0, 0), true);
+            blocked = false;
+            i++;
+            continue;
+        }
+
+        const int lastSeen = m_lastSeen.get(base->getClosestTiles()[0].x, base->getClosestTiles()[0].y);
+        if (lastSeen < minSeen)
+        {
+            minSeen = lastSeen;
+            leastSeenBaseIndex = i;
+        }
+        i++;
+    }
+
+    minSeen = std::numeric_limits<int>::max();
+    //std::cout << "count: " << bases.at(leastSeenBaseIndex)->getClosestTiles().size() << std::endl;
+    std::vector<BWAPI::TilePosition> tiles = bases.at(leastSeenBaseIndex)->getClosestTiles(10);
+    for (auto& tile : tiles)
+    {
+        UAB_ASSERT(isValidTile(tile), "How is this tile not valid?");
+
+        
+
+        const int lastSeen = m_lastSeen.get(tile.x, tile.y);
+        if (lastSeen < minSeen)
+        {
+            minSeen = lastSeen;
+            leastSeen = tile;
+        }
+    }
+    BWAPI::Broodwar->drawCircleMap(leastSeen.x * 32, leastSeen.y * 32,  26, BWAPI::Color(0, 255, 0), true);
+    //std::cout << leastSeen.x * 32 << ":" << leastSeen.y * 32 << std::endl;
+
+    return leastSeen;
+}
+
+
+BWAPI::TilePosition MapTools::getLeastRecentlySeenBase() const
+{
+    int minSeen = std::numeric_limits<int>::max();
+    BWAPI::TilePosition leastSeen;
+    const std::vector<const BaseLocation*> bases = Global::Bases().getStartingBaseLocations();
+    const BaseLocation* baseLocation = Global::Bases().getPlayerStartingBaseLocation(BWAPI::Broodwar->self());
+
+    
+    int leastSeenBaseIndex;
+    int i = 0, lenght;
+    bool blocked = false;
+    for (auto& base : bases)
+    {
+        UAB_ASSERT(base, "Null base is interesting ");
+        lenght = -1;
+        const BWEM::CPPath path = theMap.GetPath(baseLocation->getPosition(), base->getPosition(), &lenght);
+        for (auto& choke : path) {
+            if (choke->Blocked()) {
+                blocked = true;
+            }
+        }
+        if (blocked || lenght == -1) {
+            blocked = false;
+            i++;
+            continue;
+        }
+
+        const int lastSeen = m_lastSeen.get(base->getClosestTiles()[0].x, base->getClosestTiles()[0].y);
+        if (lastSeen < minSeen)
+        {
+            minSeen = lastSeen;
+            leastSeenBaseIndex = i;
+        }
+        i++;
+    }
+
+
+    minSeen = std::numeric_limits<int>::max();
+
+    for (auto& tile : bases.at(leastSeenBaseIndex)->getClosestTiles(10))
+    {
+        UAB_ASSERT(isValidTile(tile), "How is this tile not valid?");
+
+        const int lastSeen = m_lastSeen.get(tile.x, tile.y);
+        if (lastSeen < minSeen)
+        {
+            minSeen = lastSeen;
+            leastSeen = tile;
+        }
+    }
+
+    return leastSeen;
+}
+
 bool MapTools::canWalk(int tileX, int tileY) const
 {
     for (int i=0; i<4; ++i)
@@ -578,14 +730,15 @@ BWAPI::TilePosition MapTools::findCLosestChokepointPos()
 {
     BWAPI::TilePosition startLocation = BWAPI::Broodwar->self()->getStartLocation();
     const BWEM::Area* ourArea = theMap.GetNearestArea(startLocation);
-    std::cout << "ChokepointS" << std::endl;
+
+    //std::cout << "ChokepointS" << std::endl;
     BWAPI::TilePosition closestChokepoint;
     int distanceFromHome, minDistance = 100000;
 
     for (auto& chokepoint : ourArea->ChokePoints()) {
 
-        std::cout << chokepoint->Center().x << ":" << chokepoint->Center().y << std::endl;
-        std::cout << chokepoint->Pos(chokepoint->middle).x/4 << ":" << chokepoint->Pos(chokepoint->middle).y/4 << std::endl;
+        //std::cout << chokepoint->Center().x << ":" << chokepoint->Center().y << std::endl;
+        //std::cout << chokepoint->Pos(chokepoint->middle).x/4 << ":" << chokepoint->Pos(chokepoint->middle).y/4 << std::endl;
         BWAPI::TilePosition pos = BWAPI::TilePosition(chokepoint->Pos(chokepoint->middle).x /4 , chokepoint->Pos(chokepoint->middle).y /4);
         
         distanceFromHome = pos.getDistance(startLocation);
@@ -597,7 +750,38 @@ BWAPI::TilePosition MapTools::findCLosestChokepointPos()
         }
 
     }
-    std::cout << closestChokepoint.x << ":" << closestChokepoint.y << std::endl;
+    //std::cout << closestChokepoint.x << ":" << closestChokepoint.y << std::endl;
+
+    return closestChokepoint;
+}
+
+const BWEM::ChokePoint* MapTools::findCLosestChokepoint() const
+{
+    BWAPI::TilePosition startLocation = BWAPI::Broodwar->self()->getStartLocation();
+    const BWEM::Area* ourArea = theMap.GetNearestArea(startLocation);
+
+    //std::cout << "ChokepointS" << std::endl;
+    BWAPI::TilePosition closestChokepointPos;
+    const BWEM::ChokePoint* closestChokepoint = NULL;
+    int distanceFromHome, minDistance = 100000;
+
+    for (auto& chokepoint : ourArea->ChokePoints()) {
+
+        //std::cout << chokepoint->Center().x << ":" << chokepoint->Center().y << std::endl;
+        //std::cout << chokepoint->Pos(chokepoint->middle).x/4 << ":" << chokepoint->Pos(chokepoint->middle).y/4 << std::endl;
+        BWAPI::TilePosition pos = BWAPI::TilePosition(chokepoint->Pos(chokepoint->middle).x /4 , chokepoint->Pos(chokepoint->middle).y /4);
+        
+        distanceFromHome = pos.getDistance(startLocation);
+        
+        if (!closestChokepoint || distanceFromHome < minDistance)
+        {
+            closestChokepointPos = pos;
+            closestChokepoint = chokepoint;
+            minDistance = distanceFromHome;
+        }
+
+    }
+    //std::cout << closestChokepoint.x << ":" << closestChokepoint.y << std::endl;
 
     return closestChokepoint;
 }

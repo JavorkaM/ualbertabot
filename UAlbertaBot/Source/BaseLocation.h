@@ -54,6 +54,8 @@ public:
 
     const std::vector<BWAPI::TilePosition>& getClosestTiles() const;
 
+    const std::vector<BWAPI::TilePosition> getClosestTiles(int size) const;
+
     void draw();
 };
 }

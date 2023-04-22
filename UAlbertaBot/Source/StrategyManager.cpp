@@ -224,7 +224,7 @@ const MetaPairVector StrategyManager::getProtossBuildOrderGoal() const
     // if we want to expand, insert a nexus into the build order
     if (shouldExpandNow())
     {
-        std::cout << "should expand in strategy" << std::endl;
+        //std::cout << "should expand in strategy" << std::endl;
         goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Nexus, numNexusAll + 1));
     }
 

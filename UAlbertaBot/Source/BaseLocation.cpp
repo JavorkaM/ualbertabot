@@ -207,6 +207,15 @@ const std::vector<BWAPI::TilePosition> & BaseLocation::getClosestTiles() const
     return m_distanceMap.getSortedTiles();
 }
 
+const std::vector<BWAPI::TilePosition> BaseLocation::getClosestTiles(int size) const
+{
+    std::vector<BWAPI::TilePosition> sortedTiles = m_distanceMap.getSortedTiles();
+    
+    size = std::min(size, static_cast<int>(sortedTiles.size()));
+
+    return std::vector<BWAPI::TilePosition> (sortedTiles.begin(), sortedTiles.begin() + size);
+}
+
 void BaseLocation::draw()
 {
     int radius = 16;
