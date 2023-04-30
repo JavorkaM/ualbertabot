@@ -72,7 +72,7 @@ const bool StrategyManager::shouldExpandNow() const
     }
 
     // we will make expansion N after array[N] minutes have passed
-    std::vector<int> expansionTimes ={10, 20, 30, 40 , 50};
+    std::vector<int> expansionTimes ={5 , 10, 20, 30, 40 , 50};
 
     for (size_t i(0); i < expansionTimes.size(); ++i)
     {
@@ -132,9 +132,14 @@ const MetaPairVector StrategyManager::getProtossBuildOrderGoal() const
         goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Zealot, numZealots + 8));
 
         // once we have a 2nd nexus start making dragoons
-        if (numNexusAll >= 2)
+        if (numNexusAll >= 2 || (BWAPI::Broodwar->getFrameCount() > 10000 && BWAPI::Broodwar->self()->allUnitCount() > 45))
         {
             goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Dragoon, numDragoons + 4));
+        }
+        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Dragoon) > 2)
+        {
+            goal.push_back(MetaPair(BWAPI::UpgradeTypes::Singularity_Charge, 1));
+
         }
     }
     else if (Config::Strategy::StrategyName == "Protoss_DragoonRush" || Config::Strategy::StrategyName == "Protoss_SHDragoon")
@@ -161,6 +166,11 @@ const MetaPairVector StrategyManager::getProtossBuildOrderGoal() const
         if (numNexusAll >= 2)
         {
             goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Dragoon, numDragoons + 4));
+        }
+        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Dragoon) > 2)
+        {
+            goal.push_back(MetaPair(BWAPI::UpgradeTypes::Singularity_Charge, 1));
+
         }
     }
     else
@@ -215,9 +225,19 @@ const MetaPairVector StrategyManager::getProtossBuildOrderGoal() const
         }
     }
 
-    if (BWAPI::Broodwar->getFrameCount() > 70000 && BWAPI::Broodwar->self()->getUnits().size() > 20) {
-        Global::Workers().setWorkersToScout();
+
+    if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0 && BWAPI::Broodwar->getFrameCount() > 11500) {
+        goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Forge, 1));
+
     }
+    else if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0 &&
+        BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Assimilator) > 0 &&
+        BWAPI::Broodwar->getFrameCount() > 11500 &&
+        BWAPI::Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Protoss_Ground_Weapons) == 0 )
+    {
+        goal.push_back(MetaPair(BWAPI::UpgradeTypes::Protoss_Ground_Weapons, 1));
+    }
+
     
    
 

@@ -160,6 +160,36 @@ void GameCommander::setScoutUnits()
                 m_initialScoutSet = true;
 			}
 		}
+
+		// if against zerg - move earlier - to get info on Zergling rush
+		if (BWAPI::Broodwar->enemy()->getRace() == BWAPI::Races::Zerg)
+		{	
+			BWAPI::Broodwar->drawCircleMap(BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation().x * 32 + 15 * 4, BWAPI::Broodwar->self()->getStartLocation().y * 32 + 15 * 4), 8, BWAPI::Color(255, 255, 255), true);
+			int workerCount = 0;
+			for (auto& unit : BWAPI::Broodwar->self()->getUnits()) {
+				if (unit->isCompleted() && unit->getType() == BWAPI::Broodwar->self()->getRace().getWorker())
+					workerCount++;
+			}
+			if (workerCount >= 7) {
+
+
+				// grab the closest worker to the supply provider to send to scout
+				BWAPI::Unit workerScout = NULL;
+				
+				for (auto& unit : BWAPI::Broodwar->self()->getUnits()) {
+					if (unit->isCompleted() && unit->getType() == BWAPI::Broodwar->self()->getRace().getWorker() && !unit->isCarryingMinerals())
+						workerScout = unit;
+				}
+
+				// if we find a worker (which we should) add it to the scout units
+				if (workerScout)
+				{
+					Global::Scout().setWorkerScout(workerScout);
+					assignUnit(workerScout, m_scoutUnits);
+					m_initialScoutSet = true;
+				}
+			}
+		}
     }
 }
 

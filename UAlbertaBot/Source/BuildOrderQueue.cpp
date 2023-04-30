@@ -17,6 +17,15 @@ void BuildOrderQueue::clearAll()
     lowestPriority = 0;
 }
 
+void BuildOrderQueue::printItems()
+{
+    for (auto element : queue) {
+        std::cout << element.metaType.getName() << "-";
+    }
+    std::cout << std::endl;
+    return;
+}
+
 BuildOrderItem & BuildOrderQueue::getHighestPriorityItem()
 {
     // reset the number of skipped items to zero
@@ -62,6 +71,9 @@ bool BuildOrderQueue::canSkipItem()
 
 void BuildOrderQueue::queueItem(BuildOrderItem b)
 {
+    if (b.metaType.getUnitType() == BWAPI::UnitTypes::Protoss_Gateway)
+        std::cout << "Protoss_Gateway" << std::endl;
+
     // if the queue is empty, set the highest and lowest priorities
     if (queue.empty())
     {
@@ -201,6 +213,18 @@ bool BuildOrderQueue::anyInQueue(BWAPI::UnitType type) const
     for (const auto& item : queue)
     {
         if (item.metaType.getUnitType() == type)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool BuildOrderQueue::anyInQueue(BWAPI::UpgradeType type) const
+{
+    for (const auto& item : queue)
+    {
+        if (item.metaType.getUpgradeType() == type)
         {
             return true;
         }

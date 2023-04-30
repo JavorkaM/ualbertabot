@@ -25,7 +25,7 @@
 #include <string>
 
 using namespace UAlbertaBot;
-size_t game_num = 0;
+size_t game_num = 806 ;
 UAlbertaBotModule::UAlbertaBotModule()
 {
     Global::GameStart();
@@ -73,7 +73,7 @@ void UAlbertaBotModule::onStart()
 void UAlbertaBotModule::onEnd(bool isWinner) 
 {
     std::ofstream myfile;
-    myfile.open("D://Everything School//BP//CannonZealotv6//m" + std::to_string(game_num) + ".txt", std::ios_base::app);
+    myfile.open("D://Everything School//BP//CannonZealotv7//m" + std::to_string(game_num) + ".txt", std::ios_base::app);
 
 
 	if (Config::Modules::UsingGameCommander)

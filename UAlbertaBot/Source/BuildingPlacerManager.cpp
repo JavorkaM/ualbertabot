@@ -199,29 +199,47 @@ BWAPI::TilePosition BuildingPlacerManager::getBuildLocationNear(const Building &
 {
     PROFILE_FUNCTION();
     // get the precomputed vector of tile positions which are sorted closes to this location
-    
-    if (b.type == BWAPI::UnitTypes::Protoss_Photon_Cannon) {
-        // get closest chokepoint through BWEM
-
-        std::ofstream myfile;
-        myfile.open("D://Everything School//BP//CannonZealotCannon//m" + std::to_string(b.type.getID()) + std::to_string(rand()) + ".txt", std::ios_base::app);
-
-        myfile << "asd" << std::endl;
-        myfile.close();
-
-        BWAPI::TilePosition closestChokepoint = UAlbertaBot::MapTools::findCLosestChokepointPos();
-
-        const std::vector<BWAPI::TilePosition>& closestToChokePoint = Global::Map().getClosestTilesTo(closestChokepoint);
-
-        for (size_t i = 0; i < closestToChokePoint.size(); ++i)
+    if (b.type == BWAPI::UnitTypes::Protoss_Photon_Cannon ) {
+        BWAPI::Position depotPosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation().x * 32, BWAPI::Broodwar->self()->getStartLocation().y * 32);
+        int closestDist = 1000000;
+        for (auto& unit : BWAPI::Broodwar->enemy()->getUnits())
         {
-            if (canBuildHereWithSpace(closestToChokePoint[i], b, buildDist, horizontalOnly) &&
-                BWAPI::Broodwar->hasPower(closestToChokePoint[i].x, closestToChokePoint[i].y))
-            {
+            if (unit->getType() == BWAPI::UnitTypes::None || unit->getType() == BWAPI::UnitTypes::Unknown ||
+                unit->getType().isBuilding() || unit->getType() == BWAPI::UnitTypes::Protoss_Probe ||
+                unit->getType() == BWAPI::UnitTypes::Terran_SCV || unit->getType() == BWAPI::UnitTypes::Zerg_Drone)
+                continue;
 
-                return closestToChokePoint[i];
+
+            double distance = unit->getDistance(depotPosition);
+
+            if (closestDist > distance) {
+                closestDist = distance;
             }
         }
+        if (closestDist > 500) {
+            // get closest chokepoint through BWEM
+
+            std::ofstream myfile;
+            myfile.open("D://Everything School//BP//CannonZealotCannon//m" + std::to_string(b.type.getID()) + std::to_string(rand()) + ".txt", std::ios_base::app);
+
+            myfile << "asd" << std::endl;
+            myfile.close();
+
+            BWAPI::TilePosition closestChokepoint = UAlbertaBot::MapTools::findCLosestChokepointPos();
+
+            const std::vector<BWAPI::TilePosition>& closestToChokePoint = Global::Map().getClosestTilesTo(closestChokepoint);
+
+            for (size_t i = 0; i < closestToChokePoint.size(); ++i)
+            {
+
+                if (canBuildHereWithSpace(closestToChokePoint[i], b, buildDist, horizontalOnly && i > 12) &&
+                    BWAPI::Broodwar->hasPower(closestToChokePoint[i].x, closestToChokePoint[i].y))
+                {
+
+                    return closestToChokePoint[i];
+                }
+            }
+        }       
     }
 
     const std::vector<BWAPI::TilePosition>& closestToBuilding = Global::Map().getClosestTilesTo(b.desiredPosition);

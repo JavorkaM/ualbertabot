@@ -280,7 +280,16 @@ const BuildOrder & NaiveBuildOrderSearch::solve()
 
     _buildOrder = finalBuildOrder;
     _naiveSolved = true;
+    
+    int gatewayCount = 0;
+    for (size_t a(0); a < buildOrder.size(); ++a)
+    {
+        if (buildOrder[a].getUnitType() == BWAPI::UnitTypes::Protoss_Gateway)
+            gatewayCount++;
+    }
+    if (gatewayCount > 3){}
 
+    std::cout << "asdasda" << std::endl;
     return _buildOrder;
 }
 

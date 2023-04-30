@@ -55,6 +55,7 @@ public:
     BuildOrderQueue();
 
     void clearAll();											// clears the entire build order queue
+    void printItems();
     void skipItem();											// increments skippedItems
     void queueAsHighestPriority(MetaType m, bool blocking, bool gasSteal = false);		// queues something at the highest priority
     void queueAsLowestPriority(MetaType m, bool blocking);		// queues something at the lowest priority
@@ -82,6 +83,7 @@ public:
     BuildOrderItem operator [] (int i);
 
     bool anyInQueue(BWAPI::UnitType type) const;
+    bool anyInQueue(BWAPI::UpgradeType type) const;
 
 };
 }

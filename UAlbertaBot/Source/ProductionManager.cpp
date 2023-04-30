@@ -12,6 +12,9 @@
 
 using namespace UAlbertaBot;
 
+bool sawSpawningPool;
+bool madeForge;
+
 struct UnitRatings {
     double strength;
 };
@@ -22,6 +25,8 @@ std::map<std::string, UnitRatings> unitRatings;
 ProductionManager::ProductionManager()
 {
     setBuildOrder(Global::Strategy().getOpeningBookBuildOrder());
+    sawSpawningPool = false;
+    madeForge = false;
     initUnitRatings();
 }
 
@@ -154,9 +159,42 @@ void ProductionManager::update()
         if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Protoss)
         {
             if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 2)
-            {
-                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
-                //m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
+            {   
+                if( !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
+                    && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Photon_Cannon))
+                    m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
+
+
+                if (BWAPI::Broodwar->getFrameCount() > 13500 && BWAPI::Broodwar->self()->allUnitCount() > 30) {
+                    if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility) == 0 &&
+                        !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Robotics_Facility) &&
+                        !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Robotics_Facility))
+                    {
+                        m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Robotics_Facility), true);
+                    }
+                    if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility) > 0 &&
+                        !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Robotics_Facility) &&
+                        !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Robotics_Facility) &&
+                        BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Observatory) == 0 &&
+                        !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Observatory) &&
+                        !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Observatory))
+                    {
+                        m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Observatory), true);
+                    }
+
+                    if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility) > 0 &&
+                        !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Robotics_Facility) &&
+                        !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Robotics_Facility) &&
+                        BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Observatory) > 0 &&
+                        !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Observatory) &&
+                        !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Observatory) &&
+                        BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Observer) == 0 &&
+                        !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Observer) &&
+                        !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Observer))
+                    {
+                        m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Observer), 2, true, false));
+                    }
+                }
             }
 
             if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0)
@@ -185,10 +223,7 @@ void ProductionManager::update()
 
         m_enemyCloakedDetected = true;
     }
-    // if game is long add detectorunits
-    if (BWAPI::Broodwar->getFrameCount() > 60000 && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Observer) < 5 && m_queue.getNextHighestPriorityItem() != BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Observer), 0, true)) {
-        //m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Observer), true);
-    }
+
 
     double enemyCombatUnitCount = 0;
     double selfCombatUnitCount = 0;
@@ -258,8 +293,6 @@ void ProductionManager::update()
 
     }
 
-
-
     /*std::cout << selfCombatUnitCount;
     std::cout << " vs. ";
     std::cout << enemyCombatUnitCount << std::endl;
@@ -278,10 +311,11 @@ void ProductionManager::update()
     {
         if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 1
             && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
+            && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Photon_Cannon)
             && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0
             && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
         {
-            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), false);
         }
     }
     if (enemyCombatUnitCount > selfCombatUnitCount && 
@@ -291,7 +325,7 @@ void ProductionManager::update()
             !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&
             !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
         {
-            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), false);
         }
     }
 
@@ -303,14 +337,28 @@ void ProductionManager::update()
         !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&
         !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
     {
+        //std::cout << m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge) << m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) << std::endl;
+        
+        //m_queue.printItems();
+        /*
+        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Gateway) > 0 && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Gateway)
+            && sawSpawningPool && !madeForge) {
+            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Forge), 0, true, false));
+            sawSpawningPool = false;
+            madeForge = true;
+        }*/
 
-
-
-        if (enemy_has_Citadel || ((Zerg_Hatchery_Count > 1 || Zerg_Spawning_Pool_Count > 0) && BWAPI::Broodwar->getFrameCount() < 5000)) {
-            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Forge), 2, true, false));
+        if (enemy_has_Citadel || ( Zerg_Spawning_Pool_Count > 0 && BWAPI::Broodwar->getFrameCount() < 3500 ))
+        {
+            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Forge), 0, true, false));
+            /*if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Gateway) > 0 && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Gateway) && !madeForge)
+            else {
+                sawSpawningPool = true;
+            }*/
+            //std::cout << "forge" << BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Gateway) << std::endl;
         }
-        if (enemy_has_Archives && !enemy_has_Citadel) {
-            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
+        if (enemy_has_Archives) {
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), false);
         }
 
 
@@ -322,7 +370,7 @@ void ProductionManager::update()
         && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0)
     {
         if (enemy_has_Archives) {
-            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), 2, true, false));
+            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), 2, false, false));
         }
     }
 
@@ -330,14 +378,7 @@ void ProductionManager::update()
 
     
 
-    
 
-
-
-
-    
-
-   
 	m_bossManager.drawSearchInformation(490, 100);
     m_bossManager.drawStateInformation(250, 0);
 }

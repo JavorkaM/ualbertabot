@@ -59,6 +59,12 @@ void DetectorManager::executeMicro(const BWAPI::Unitset & targets)
         }
         else if ((!detectorUnitInBattle && unitClosestToEnemy && unitClosestToEnemy->getPosition().isValid()) || Global::Info().enemyHasCloakedUnits() && unitClosestToEnemy)
         {
+            for (auto& unit : cloakedUnits) {
+                if (!m_cloakedUnitMap[unit] && unit->getPosition()) {
+                    Micro::SmartMove(detectorUnit, unit->getPosition());
+                    m_cloakedUnitMap[unit] = true;
+                }
+            }
             Micro::SmartMove(detectorUnit, unitClosestToEnemy->getPosition());
             detectorUnitInBattle = true;
         }
