@@ -38,6 +38,7 @@ public:
     bool isCombatUnit(BWAPI::UnitType type) const;
     void getNearbyForce(std::vector<UnitInfo> & unitInfo, BWAPI::Position p, BWAPI::Player player, int radius);
     bool enemyHasCloakedUnits();
+    bool enemyHasDarkTemplarUnits();
     void drawExtendedInterface();
     void drawUnitInformation(int x, int y);
     void drawMapInformation();

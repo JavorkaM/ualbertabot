@@ -150,7 +150,7 @@ void ProductionManager::update()
         {
             BWAPI::Broodwar->printf("Supply deadlock detected, building supply!");
         }
-        m_queue.queueAsHighestPriority(MetaType(BWAPI::Broodwar->self()->getRace().getSupplyProvider()), true);
+        m_queue.queueAsHighestPriority(MetaType(BWAPI::Broodwar->self()->getRace().getSupplyProvider()), true, false);
     }
 
     // if they have cloaked units get a new goal asap
@@ -162,7 +162,7 @@ void ProductionManager::update()
             {   
                 if( !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
                     && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Photon_Cannon))
-                    m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
+                    m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true, false);
 
 
                 if (BWAPI::Broodwar->getFrameCount() > 13500 && BWAPI::Broodwar->self()->allUnitCount() > 30) {
@@ -170,7 +170,7 @@ void ProductionManager::update()
                         !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Robotics_Facility) &&
                         !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Robotics_Facility))
                     {
-                        m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Robotics_Facility), true);
+                        m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Robotics_Facility), true, false);
                     }
                     if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility) > 0 &&
                         !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Robotics_Facility) &&
@@ -179,7 +179,7 @@ void ProductionManager::update()
                         !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Observatory) &&
                         !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Observatory))
                     {
-                        m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Observatory), true);
+                        m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Observatory), 3, true, false));
                     }
 
                     if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility) > 0 &&
@@ -199,20 +199,20 @@ void ProductionManager::update()
 
             if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0)
             {
-                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
+                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true, false);
             }
         }
         else if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Terran)
         {
             if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Terran_Missile_Turret) < 2)
             {
-                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Terran_Missile_Turret), true);
-                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Terran_Missile_Turret), true);
+                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Terran_Missile_Turret), true, false);
+                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Terran_Missile_Turret), true, false);
             }
 
             if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Terran_Engineering_Bay) == 0)
             {
-                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Terran_Engineering_Bay), true);
+                m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Terran_Engineering_Bay), true, false);
             }
         }
 
@@ -285,11 +285,8 @@ void ProductionManager::update()
             continue;
 
         double unitRating = getUnitRating(unit->getType().getName());
-        if (unitRating >= 0)
+        if (unitRating >= 0 && unit->getDistance(depotPosition) < closestDist + 500)
             selfCombatUnitCount += unitRating;
-        else {
-            //std::cout << "unit not found in rating" << std::endl;
-        }
 
     }
 
@@ -315,7 +312,7 @@ void ProductionManager::update()
             && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0
             && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
         {
-            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), false);
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true, false);
         }
     }
     if (enemyCombatUnitCount > selfCombatUnitCount && 
@@ -325,7 +322,7 @@ void ProductionManager::update()
             !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&
             !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
         {
-            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), false);
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true, false);
         }
     }
 
@@ -350,7 +347,8 @@ void ProductionManager::update()
 
         if (enemy_has_Citadel || ( Zerg_Spawning_Pool_Count > 0 && BWAPI::Broodwar->getFrameCount() < 3500 ))
         {
-            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Forge), 0, true, false));
+            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Forge), 1, true, false));          
+
             /*if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Gateway) > 0 && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Gateway) && !madeForge)
             else {
                 sawSpawningPool = true;
@@ -358,7 +356,7 @@ void ProductionManager::update()
             //std::cout << "forge" << BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Gateway) << std::endl;
         }
         if (enemy_has_Archives) {
-            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), false);
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true , false);
         }
 
 
@@ -369,13 +367,29 @@ void ProductionManager::update()
         && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Photon_Cannon)
         && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0)
     {
-        if (enemy_has_Archives) {
-            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), 2, false, false));
+        if (enemy_has_Archives || Zerg_Spawning_Pool_Count > 0 && BWAPI::Broodwar->getFrameCount() < 3500)
+        {
+            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), 0, true, false));
         }
     }
 
 
+    if (m_queue == m_queue_last_copy) {
+        if (BWAPI::Broodwar->getFrameCount() - last_m_queue_change_at > 2000 ) {
+            m_queue.clearAll();
+            if (Config::Debug::DrawBuildOrderSearchInfo)
+            {
+                BWAPI::Broodwar->drawTextScreen(150, 10, "Build order stuck, looking for a new one!");
+            }
 
+            performBuildOrderSearch();
+        }
+            
+    }
+    else {
+        m_queue_last_copy = m_queue;
+        last_m_queue_change_at = BWAPI::Broodwar->getFrameCount();
+    }
     
 
 
@@ -495,7 +509,7 @@ BWAPI::Unit ProductionManager::getProducer(MetaType t, BWAPI::Position closestTo
         // reasons a unit can not train the desired type
         if (unit->getType() != producerType) { continue; }
         if (!unit->isCompleted()) { continue; }
-        if (unit->isTraining()) { continue; }
+        //if (unit->isTraining()) { continue; }
         if (unit->isLifted()) { continue; }
         if (!unit->isPowered()) { continue; }
 
@@ -568,8 +582,19 @@ BWAPI::Unit ProductionManager::getProducer(MetaType t, BWAPI::Position closestTo
         // if we haven't cut it, add it to the set of candidates
         candidateProducers.insert(unit);
     }
+    int minInQueue = 10000;
+    BWAPI::Unit finalProducer = nullptr;
 
-    return getClosestUnitToPosition(candidateProducers, closestTo);
+    for (auto& producer : candidateProducers) {
+        if (producer->getTrainingQueue().size() < minInQueue) {
+            minInQueue = producer->getTrainingQueue().size();
+            finalProducer = producer;
+        }
+    }
+    return finalProducer;
+    
+
+    //return getClosestUnitToPosition(candidateProducers, closestTo);
 }
 
 BWAPI::Unit ProductionManager::getClosestUnitToPosition(const BWAPI::Unitset & units, BWAPI::Position closestTo)

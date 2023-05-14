@@ -139,7 +139,7 @@ void ScoutManager::moveScouts()
     {
         m_gasStealFinished = true;
     }
-
+    
     // for each start location in the level
     if (!enemyBaseLocation)
     {

@@ -92,23 +92,6 @@ void MapTools::onStart()
     theMap.EnableAutomaticPathAnalysis();
     bool startingLocationsOK = theMap.FindBasesForStartingLocations();
     UAB_ASSERT(startingLocationsOK, "Starting locations not OK");
-
-    BWAPI::TilePosition startLocation = BWAPI::Broodwar->self()->getStartLocation();
-    const BWEM::Area* ourArea = theMap.GetNearestArea(startLocation);
-    auto& minerals = theMap.GetNearestArea(startLocation)->Bases().at(0).Minerals();
-    for (auto& chokepoint : ourArea->ChokePoints()) {
-        //auto & asd = chokepoint->BlockingNeutral();
-
-        //if (asd) {
-            //BWAPI::Broodwar->drawCircleMap(asd, 16, BWAPI::Color(255, 255, 255), true);
-        //}
-        /*if (minerals.size() != 0) {
-            for (int i = 0; i < minerals.size(); i++) {
-                std::cout << i;
-                BWAPI::Broodwar->drawCircleMap(minerals.at(i)->Pos(), 16, BWAPI::Color(255, 255, 255), true);
-            }
-        }*/
-    }
         
 }
 

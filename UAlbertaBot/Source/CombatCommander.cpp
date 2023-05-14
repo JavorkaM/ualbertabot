@@ -260,7 +260,7 @@ void CombatCommander::updateDefenseSquads()
         BWAPI::Position basePosition = myBaseLocation->getPosition();
 
         // start off assuming all enemy units in region are just workers
-        int numDefendersPerEnemyUnit = 2;
+        int numDefendersPerEnemyUnit = 3;
 
         // all of the enemy units in this region
         std::vector<BWAPI::Unit> enemyUnitsInRegion;
@@ -432,8 +432,8 @@ BWAPI::Unit CombatCommander::findClosestDefender(const Squad & defenseSquad, BWA
     BWAPI::Unit closestDefender = nullptr;
     double minDistance = std::numeric_limits<double>::max();
 
-    int zerglingsInOurBase = numZerglingsInOurBase();
-    bool zerglingRush = zerglingsInOurBase > 0 && BWAPI::Broodwar->getFrameCount() < 5000;
+    int zerglingsZealotsInOurBase = numZerglingsZealotsInOurBase();
+    bool zerglingRush = zerglingsZealotsInOurBase > 0 && BWAPI::Broodwar->getFrameCount() < 15000;
 
     for (auto & unit : m_combatUnits)
     {
@@ -476,11 +476,45 @@ void CombatCommander::drawSquadInformation(int x, int y)
 
 BWAPI::Position CombatCommander::getMainAttackLocation()
 {
-    const BaseLocation * enemyBaseLocation = Global::Bases().getPlayerStartingBaseLocation(BWAPI::Broodwar->enemy());
+    const BaseLocation* enemyBaseLocation = Global::Bases().getPlayerStartingBaseLocation(BWAPI::Broodwar->enemy());
+
+
+
+    if (BWAPI::Broodwar->enemy()->getRace() == BWAPI::Races::Zerg && BWAPI::Broodwar->getFrameCount() < 3500)
+    {
+        for (auto& unit : BWAPI::Broodwar->self()->getUnits()) {
+            if (unit->getType() == BWAPI::UnitTypes::Zerg_Spawning_Pool) {
+                zerglingRush = true;
+            }
+        }
+    }
+
 
     // First choice: Attack an enemy region if we can see units inside it
     if (enemyBaseLocation)
     {
+        // First choice overrule : If we feel zerglingRush coming, stay at chokepoint
+        if (BWAPI::Broodwar->getFrameCount() < 6750 && (zerglingRush || BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge > 0))){
+            BWAPI::TilePosition chokePos = MapTools::findCLosestChokepointPos();
+            startedBaseSearch = -1;
+            return BWAPI::Position(chokePos.x * 32, chokePos.y * 32);
+        }
+
+        // First choice overrule : If we see DTs, stay close to detector Photon Cannon until we have an observer
+        if (Global::Info().enemyHasDarkTemplarUnits() &&  BWAPI:: Broodwar->getFrameCount() < 14500 &&
+            BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) > 0 &&
+            BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Observer) == 0) {
+            for (auto& unit : BWAPI::Broodwar->self()->getUnits()) {
+                if (unit->getType() == BWAPI::UnitTypes::Protoss_Photon_Cannon) {
+                    startedBaseSearch = -1;
+                    return unit->getPosition();
+                }
+            }
+        }
+
+
+
+
         BWAPI::Position enemyBasePosition = enemyBaseLocation->getPosition();
 
         // get all known enemy units in the area
@@ -500,6 +534,7 @@ BWAPI::Position CombatCommander::getMainAttackLocation()
         {
             if (!onlyOverlords)
             {
+                startedBaseSearch = -1;
                 return enemyBaseLocation->getPosition();
             }
         }
@@ -512,6 +547,7 @@ BWAPI::Position CombatCommander::getMainAttackLocation()
 
         if (ui.type.isBuilding() && ui.lastPosition != BWAPI::Positions::None)
         {
+            startedBaseSearch = -1;
             return ui.lastPosition;
         }
     }
@@ -526,36 +562,21 @@ BWAPI::Position CombatCommander::getMainAttackLocation()
 
         if (UnitUtil::IsValidUnit(unit) && unit->isVisible())
         {
+            startedBaseSearch = -1;
             return unit->getPosition();
         }
     }
-
-    // Fourth choice: If we do not know enemy base location, explore start locations
-    /*if (!enemyBaseLocation) {
-        for (auto startLocation : BWAPI::Broodwar->getStartLocations())
-        {
-            // if we haven't explored it yet, explore it
-            if (!BWAPI::Broodwar->isExplored(startLocation) &&
-                !BWAPI::Broodwar->isVisible(startLocation)   )
-            {
-                bool explored = BWAPI::Broodwar->isExplored(startLocation);
-                bool visible = BWAPI::Broodwar->isVisible(startLocation);
-                std::cout << "visible: " << visible << std::endl;
-                std::cout << "explored: " << explored << std::endl;
-                BWAPI::Broodwar->drawCircleMap(BWAPI::Position(startLocation), 32, BWAPI::Colors::Purple);
-                
-                return BWAPI::Position(startLocation);;
-            }
-        }
-    }*/
     
     // Sixth choice: We can't see anything so explore the map attacking along the way
-    if(BWAPI::Broodwar->getFrameCount() > 30000)
+    if(startedBaseSearch - BWAPI::Broodwar->getFrameCount() > 4000)
         return BWAPI::Position(Global::Map().getLeastRecentlySeenTileEnemy());
 
     // Fifth choice: Check unchecked bases
-    if(enemyBaseLocation)
+    if (enemyBaseLocation) {
+        if (startedBaseSearch < 0)
+            startedBaseSearch = BWAPI::Broodwar->getFrameCount();
         return BWAPI::Position(Global::Map().getLeastRecentlySeenBaseEnemy());
+    }
     else if (BWAPI::Broodwar->getFrameCount() > 100)
         return  BWAPI::Position(Global::Map().getLeastRecentlySeenBase());
 
@@ -632,27 +653,27 @@ int CombatCommander::defendWithWorkers()
     return enemyUnitsNearWorkers;
 }
 
-int CombatCommander::numZerglingsInOurBase()
+int CombatCommander::numZerglingsZealotsInOurBase()
 {
     int concernRadius = 600;
-    int zerglings = 0;
+    int zerglingsZealots = 0;
     BWAPI::Position ourBasePosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
 
-    // check to see if the enemy has zerglings as the only attackers in our base
+    // check to see if the enemy has zerglingsZealots as the only attackers in our base
     for (auto & unit : BWAPI::Broodwar->enemy()->getUnits())
     {
-        if (unit->getType() != BWAPI::UnitTypes::Zerg_Zergling)
+        if (unit->getType() != BWAPI::UnitTypes::Zerg_Zergling || unit->getType() != BWAPI::UnitTypes::Protoss_Zealot)
         {
             continue;
         }
 
         if (unit->getDistance(ourBasePosition) < concernRadius)
         {
-            zerglings++;
+            zerglingsZealots++;
         }
     }
 
-    return zerglings;
+    return zerglingsZealots;
 }
 
 bool CombatCommander::beingBuildingRushed()

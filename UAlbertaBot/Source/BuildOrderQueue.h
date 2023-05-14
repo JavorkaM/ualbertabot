@@ -85,5 +85,20 @@ public:
     bool anyInQueue(BWAPI::UnitType type) const;
     bool anyInQueue(BWAPI::UpgradeType type) const;
 
+    bool operator==(const BuildOrderQueue& b_o)
+    {
+        // buildings are equal if their worker unit or building unit are equal
+        if (queue.size() != b_o.queue.size())
+            return false;
+
+
+        for (int i = 0; i < b_o.queue.size(); i++) {
+            if (queue[i] != b_o.queue[i])
+                return false;
+        }
+        return true;
+        
+    }
+
 };
 }

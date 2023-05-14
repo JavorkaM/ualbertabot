@@ -12,6 +12,8 @@ class CombatCommander
     SquadData       m_squadData;
     BWAPI::Unitset  m_combatUnits;
     bool            m_initialized = false;
+    bool            zerglingRush = false;
+    int             startedBaseSearch = -1;
 
     void updateScoutDefenseSquad();
     void updateDefenseSquads();
@@ -22,7 +24,7 @@ class CombatCommander
     void updateDefenseSquadUnits(Squad & defenseSquad, const size_t & flyingDefendersNeeded, const size_t & groundDefendersNeeded);
 
     int  defendWithWorkers();
-    int  numZerglingsInOurBase();
+    int  numZerglingsZealotsInOurBase();
     bool beingBuildingRushed();
     bool isSquadUpdateFrame();
 

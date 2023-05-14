@@ -19,6 +19,8 @@ class ProductionManager
     BuildingManager     m_buildingManager;
     BOSSManager         m_bossManager;
     BuildOrderQueue     m_queue;
+    BuildOrderQueue     m_queue_last_copy;
+    int                 last_m_queue_change_at;
     BWAPI::TilePosition m_predictedTilePosition;
     bool                m_enemyCloakedDetected          = false;
     bool                m_assignedWorkerForThisBuilding = false;

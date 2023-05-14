@@ -392,3 +392,17 @@ bool InformationManager::enemyHasCloakedUnits()
 
 	return false;
 }
+
+bool InformationManager::enemyHasDarkTemplarUnits()
+{
+    for (const auto& kv : getUnitData(BWAPI::Broodwar->enemy()).getUnits())
+    {
+        const UnitInfo& ui(kv.second);
+        if (ui.type == BWAPI::UnitTypes::Protoss_Dark_Templar)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}

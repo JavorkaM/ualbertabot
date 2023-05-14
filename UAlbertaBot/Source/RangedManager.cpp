@@ -108,6 +108,8 @@ BWAPI::Unit RangedManager::getTarget(BWAPI::Unit rangedUnit, const BWAPI::Unitse
 
     for (const auto & target : targets)
     {
+        if (target->getType() == BWAPI::UnitTypes::Protoss_Observer)
+            continue;
         double distance         = rangedUnit->getDistance(target);
         double LTD              = UnitUtil::CalculateLTD(target, rangedUnit);
         int priority            = getAttackPriority(rangedUnit, target);
