@@ -73,7 +73,7 @@ void UAlbertaBotModule::onStart()
 void UAlbertaBotModule::onEnd(bool isWinner) 
 {
     std::ofstream myfile;
-    myfile.open("D://Everything School//BP//CannonZealotv87//m" + std::to_string(game_num) + ".txt", std::ios_base::app);
+    myfile.open("D://Everything School//BP//CannonDragoonv88//m" + std::to_string(game_num) + ".txt", std::ios_base::app);
 
 
 	if (Config::Modules::UsingGameCommander)

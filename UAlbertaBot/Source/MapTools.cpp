@@ -545,6 +545,69 @@ BWAPI::TilePosition MapTools::getLeastRecentlySeenBaseEnemy() const
     return leastSeen;
 }
 
+BWAPI::TilePosition MapTools::getLeastRecentlySeenStartingBase() const
+{
+    int minSeen = std::numeric_limits<int>::max();
+    BWAPI::TilePosition leastSeen;
+    const BaseLocation* baseLocation = Global::Bases().getPlayerStartingBaseLocation(BWAPI::Broodwar->self());
+    const std::vector<const BaseLocation*> bases = Global::Bases().getStartingBaseLocations();
+
+    UAB_ASSERT(baseLocation, "Null baselocation is insanely ");
+    int leastSeenBaseIndex;
+    int i = 0;
+    bool blocked = false;
+    int lenght;
+    for (auto& base : bases)
+    {
+        UAB_ASSERT(base, "Null base is interesting ");
+        lenght = -1;
+
+        const BWEM::CPPath path = theMap.GetPath(baseLocation->getPosition(), base->getPosition(), &lenght);
+
+        for (auto& choke : path) {
+
+            if (choke->Blocked() || !choke->AccessibleFrom(findCLosestChokepoint())) {
+                blocked = true;
+            }
+        }
+        if (blocked || lenght == -1) {
+            BWAPI::Broodwar->drawCircleMap(base->getPosition().x, base->getPosition().x, 48, BWAPI::Color(255, 0, 0), true);
+            blocked = false;
+            i++;
+            continue;
+        }
+
+        const int lastSeen = m_lastSeen.get(base->getClosestTiles()[0].x, base->getClosestTiles()[0].y);
+        if (lastSeen < minSeen)
+        {
+            minSeen = lastSeen;
+            leastSeenBaseIndex = i;
+        }
+        i++;
+    }
+
+    minSeen = std::numeric_limits<int>::max();
+    //std::cout << "count: " << bases.at(leastSeenBaseIndex)->getClosestTiles().size() << std::endl;
+    std::vector<BWAPI::TilePosition> tiles = bases.at(leastSeenBaseIndex)->getClosestTiles(10);
+    for (auto& tile : tiles)
+    {
+        UAB_ASSERT(isValidTile(tile), "How is this tile not valid?");
+
+
+
+        const int lastSeen = m_lastSeen.get(tile.x, tile.y);
+        if (lastSeen < minSeen)
+        {
+            minSeen = lastSeen;
+            leastSeen = tile;
+        }
+    }
+    BWAPI::Broodwar->drawCircleMap(leastSeen.x * 32, leastSeen.y * 32, 26, BWAPI::Color(0, 255, 0), true);
+    //std::cout << leastSeen.x * 32 << ":" << leastSeen.y * 32 << std::endl;
+
+    return leastSeen;
+}
+
 
 BWAPI::TilePosition MapTools::getLeastRecentlySeenBase() const
 {

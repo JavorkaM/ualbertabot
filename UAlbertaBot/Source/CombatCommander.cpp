@@ -433,7 +433,7 @@ BWAPI::Unit CombatCommander::findClosestDefender(const Squad & defenseSquad, BWA
     double minDistance = std::numeric_limits<double>::max();
 
     int zerglingsZealotsInOurBase = numZerglingsZealotsInOurBase();
-    bool zerglingRush = zerglingsZealotsInOurBase > 0 && BWAPI::Broodwar->getFrameCount() < 15000;
+    bool zerglingRushing = zerglingsZealotsInOurBase > 0 && BWAPI::Broodwar->getFrameCount() < 15000;
 
     for (auto & unit : m_combatUnits)
     {
@@ -448,9 +448,15 @@ BWAPI::Unit CombatCommander::findClosestDefender(const Squad & defenseSquad, BWA
         }
 
         // add workers to the defense squad if we are being rushed very quickly
-        if (!Config::Micro::WorkersDefendRush || (unit->getType().isWorker() && !zerglingRush && !beingBuildingRushed()))
+        if (!Config::Micro::WorkersDefendRush)
         {
             continue;
+        }
+        if (unit->getType().isWorker() && !zerglingRushing && !beingBuildingRushed()) {
+            continue;
+        }
+        else {
+            std::cout << "worker defending!" << std::endl;
         }
 
         double dist = unit->getDistance(pos);
@@ -461,6 +467,9 @@ BWAPI::Unit CombatCommander::findClosestDefender(const Squad & defenseSquad, BWA
         }
     }
 
+    if (closestDefender && closestDefender->getType().isWorker()) {
+        std::cout << "DEFENDIIING!" << std::endl;
+    }
     return closestDefender;
 }
 
@@ -482,7 +491,7 @@ BWAPI::Position CombatCommander::getMainAttackLocation()
 
     if (BWAPI::Broodwar->enemy()->getRace() == BWAPI::Races::Zerg && BWAPI::Broodwar->getFrameCount() < 3500)
     {
-        for (auto& unit : BWAPI::Broodwar->self()->getUnits()) {
+        for (auto& unit : BWAPI::Broodwar->enemy()->getUnits()) {
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Spawning_Pool) {
                 zerglingRush = true;
             }
@@ -568,7 +577,7 @@ BWAPI::Position CombatCommander::getMainAttackLocation()
     }
     
     // Sixth choice: We can't see anything so explore the map attacking along the way
-    if(startedBaseSearch - BWAPI::Broodwar->getFrameCount() > 4000)
+    if(BWAPI::Broodwar->getFrameCount() - startedBaseSearch  > 7500 || BWAPI::Broodwar->getFrameCount() > 60000)
         return BWAPI::Position(Global::Map().getLeastRecentlySeenTileEnemy());
 
     // Fifth choice: Check unchecked bases
@@ -578,9 +587,9 @@ BWAPI::Position CombatCommander::getMainAttackLocation()
         return BWAPI::Position(Global::Map().getLeastRecentlySeenBaseEnemy());
     }
     else if (BWAPI::Broodwar->getFrameCount() > 100)
-        return  BWAPI::Position(Global::Map().getLeastRecentlySeenBase());
+        return  BWAPI::Position(Global::Map().getLeastRecentlySeenStartingBase());
 
-    return BWAPI::Position(Global::Map().getLeastRecentlySeenTileEnemy());
+    return BWAPI::Position(Global::Map().getLeastRecentlySeenTile());
 
 
     

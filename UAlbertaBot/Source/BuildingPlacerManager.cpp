@@ -218,13 +218,6 @@ BWAPI::TilePosition BuildingPlacerManager::getBuildLocationNear(const Building &
         }
         if (closestDist > 500) {
             // get closest chokepoint through BWEM
-
-            std::ofstream myfile;
-            myfile.open("D://Everything School//BP//CannonZealotCannon//m" + std::to_string(b.type.getID()) + std::to_string(rand()) + ".txt", std::ios_base::app);
-
-            myfile << "asd" << std::endl;
-            myfile.close();
-
             BWAPI::TilePosition closestChokepoint = UAlbertaBot::MapTools::findCLosestChokepointPos();
 
             const std::vector<BWAPI::TilePosition>& closestToChokePoint = Global::Map().getClosestTilesTo(closestChokepoint);

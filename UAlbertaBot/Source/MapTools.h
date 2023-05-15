@@ -82,6 +82,8 @@ public:
     BWAPI::TilePosition MapTools::getLeastRecentlySeenBase() const;
     BWAPI::TilePosition MapTools::getLeastRecentlySeenBaseEnemy() const;
 
+    BWAPI::TilePosition getLeastRecentlySeenStartingBase() const;
+
     // returns a list of all tiles on the map, sorted by 4-direcitonal walk distance from the given position
     const std::vector<BWAPI::TilePosition> & getClosestTilesTo(const BWAPI::TilePosition & tilePos) const;
     const std::vector<BWAPI::TilePosition> & getClosestTilesTo(const BWAPI::Position & pos) const;
