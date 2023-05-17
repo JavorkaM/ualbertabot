@@ -3,6 +3,7 @@
 #include <vector>
 #include "DistanceMap.h"
 #include "Grid.hpp"
+#include "BaseLocation.h"
 
 #include "stardraft/StarDraft.h"
 #include "../../BWEM 1.4.1/src/bwem.h"
@@ -80,6 +81,7 @@ public:
     BWAPI::TilePosition getLeastRecentlySeenTile() const;
     BWAPI::TilePosition MapTools::getLeastRecentlySeenTileEnemy() const;
     BWAPI::TilePosition MapTools::getLeastRecentlySeenBase() const;
+    std::vector<const BaseLocation*> sortBaseLocationsByDistance(const BaseLocation* enemyBase) const;
     BWAPI::TilePosition MapTools::getLeastRecentlySeenBaseEnemy() const;
 
     BWAPI::TilePosition getLeastRecentlySeenStartingBase() const;
@@ -90,6 +92,8 @@ public:
 
     static BWAPI::TilePosition MapTools::findCLosestChokepointPos();
     const BWEM::ChokePoint* findCLosestChokepoint() const;
+    bool isAccessiblefromBWEM(BWAPI::TilePosition target, BWAPI::TilePosition from) const;
+    bool isAccessiblefromBWEM(BWAPI::Position target, BWAPI::Position from) const;
 };
 
 }

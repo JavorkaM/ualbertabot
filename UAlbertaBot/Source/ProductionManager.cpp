@@ -393,21 +393,6 @@ void ProductionManager::update()
         last_m_queue_change_at = BWAPI::Broodwar->getFrameCount();
     }
 
-    if (m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Observatory) &&
-        BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility) < 1
-        && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Robotics_Facility)
-        && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Robotics_Facility))
-    {
-        m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Robotics_Facility), true, false);
-    }
-
-    if (m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Observer) &&
-        BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Observatory) < 1
-        && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Observatory)
-        && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Observatory)) 
-    {
-        m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Observatory),true, false);
-    }
 
 
     if (BWAPI::Broodwar->getFrameCount() % 1000 == 0 && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Pylon) > 3 ) {
@@ -434,6 +419,18 @@ void ProductionManager::update()
             m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Pylon), true, false);
         }
     }
+    if (BWAPI::Broodwar->getFrameCount() % 1000 == 0 &&
+        BWAPI::Broodwar->self()->supplyTotal() - BWAPI::Broodwar->self()->supplyUsed() == 0 &&
+        !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Pylon) &&
+        m_queue.getHighestPriorityItem().metaType.getUnitType() != BWAPI::UnitTypes::Protoss_Pylon &&
+        m_queue.getHighestPriorityItem().metaType.getUnitType().supplyRequired() > 0)
+    {
+        m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Pylon), true, false);
+    }
+
+    if(m_queue.size() > 0 && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Probe) == 0 && m_queue.getHighestPriorityItem().metaType.getUnitType() != BWAPI::UnitTypes::Protoss_Probe)
+        m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Probe), true, false);
+
 
     
     

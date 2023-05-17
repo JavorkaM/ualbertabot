@@ -260,7 +260,7 @@ void CombatCommander::updateDefenseSquads()
         BWAPI::Position basePosition = myBaseLocation->getPosition();
 
         // start off assuming all enemy units in region are just workers
-        int numDefendersPerEnemyUnit = 3;
+        int numDefendersPerEnemyUnit = 2;
 
         // all of the enemy units in this region
         std::vector<BWAPI::Unit> enemyUnitsInRegion;
@@ -416,6 +416,10 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
         // if we find a valid ground defender add it
         if (defenderToAdd)
         {
+            if (defenderToAdd->getType().isWorker())
+            {
+                Global::Workers().setCombatWorker(defenderToAdd);
+            }
             m_squadData.assignUnitToSquad(defenderToAdd, defenseSquad);
             ++groundDefendersAdded;
         }
@@ -431,9 +435,9 @@ BWAPI::Unit CombatCommander::findClosestDefender(const Squad & defenseSquad, BWA
 {
     BWAPI::Unit closestDefender = nullptr;
     double minDistance = std::numeric_limits<double>::max();
+    int rushingNum = numZerglingsInOurBase();
 
-    int zerglingsZealotsInOurBase = numZerglingsZealotsInOurBase();
-    bool zerglingRushing = zerglingsZealotsInOurBase > 0 && BWAPI::Broodwar->getFrameCount() < 15000;
+    bool zerglingRushing = rushingNum > 0 && BWAPI::Broodwar->getFrameCount() < 15000;
 
     for (auto & unit : m_combatUnits)
     {
@@ -455,9 +459,6 @@ BWAPI::Unit CombatCommander::findClosestDefender(const Squad & defenseSquad, BWA
         if (unit->getType().isWorker() && !zerglingRushing && !beingBuildingRushed()) {
             continue;
         }
-        else {
-            std::cout << "worker defending!" << std::endl;
-        }
 
         double dist = unit->getDistance(pos);
         if (!closestDefender || (dist < minDistance))
@@ -465,10 +466,6 @@ BWAPI::Unit CombatCommander::findClosestDefender(const Squad & defenseSquad, BWA
             closestDefender = unit;
             minDistance = dist;
         }
-    }
-
-    if (closestDefender && closestDefender->getType().isWorker()) {
-        std::cout << "DEFENDIIING!" << std::endl;
     }
     return closestDefender;
 }
@@ -577,7 +574,7 @@ BWAPI::Position CombatCommander::getMainAttackLocation()
     }
     
     // Sixth choice: We can't see anything so explore the map attacking along the way
-    if(BWAPI::Broodwar->getFrameCount() - startedBaseSearch  > 7500 || BWAPI::Broodwar->getFrameCount() > 60000)
+    if(BWAPI::Broodwar->getFrameCount() - startedBaseSearch  > 15000 || BWAPI::Broodwar->getFrameCount() > 60000)
         return BWAPI::Position(Global::Map().getLeastRecentlySeenTileEnemy());
 
     // Fifth choice: Check unchecked bases
@@ -662,16 +659,16 @@ int CombatCommander::defendWithWorkers()
     return enemyUnitsNearWorkers;
 }
 
-int CombatCommander::numZerglingsZealotsInOurBase()
+int CombatCommander::numZerglingsInOurBase()
 {
-    int concernRadius = 600;
+    int concernRadius = 1000;
     int zerglingsZealots = 0;
     BWAPI::Position ourBasePosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
 
     // check to see if the enemy has zerglingsZealots as the only attackers in our base
     for (auto & unit : BWAPI::Broodwar->enemy()->getUnits())
     {
-        if (unit->getType() != BWAPI::UnitTypes::Zerg_Zergling || unit->getType() != BWAPI::UnitTypes::Protoss_Zealot)
+        if (unit->getType() != BWAPI::UnitTypes::Zerg_Zergling)
         {
             continue;
         }

@@ -71,8 +71,6 @@ bool BuildOrderQueue::canSkipItem()
 
 void BuildOrderQueue::queueItem(BuildOrderItem b)
 {
-    if (b.metaType.getUnitType() == BWAPI::UnitTypes::Protoss_Gateway)
-        std::cout << "Protoss_Gateway" << std::endl;
 
     // if the queue is empty, set the highest and lowest priorities
     if (queue.empty())

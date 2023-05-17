@@ -72,7 +72,7 @@ const bool StrategyManager::shouldExpandNow() const
     }
 
     // we will make expansion N after array[N] minutes have passed
-    std::vector<int> expansionTimes ={6, 14, 22, 30, 40 , 50};
+    std::vector<int> expansionTimes ={5, 10, 20, 30, 40 , 50};
 
     for (size_t i(0); i < expansionTimes.size(); ++i)
     {

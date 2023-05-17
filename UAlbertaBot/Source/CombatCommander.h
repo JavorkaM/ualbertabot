@@ -24,7 +24,7 @@ class CombatCommander
     void updateDefenseSquadUnits(Squad & defenseSquad, const size_t & flyingDefendersNeeded, const size_t & groundDefendersNeeded);
 
     int  defendWithWorkers();
-    int  numZerglingsZealotsInOurBase();
+    int  numZerglingsInOurBase();
     bool beingBuildingRushed();
     bool isSquadUpdateFrame();
 

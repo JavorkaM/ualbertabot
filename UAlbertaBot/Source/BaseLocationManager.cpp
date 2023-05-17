@@ -5,6 +5,7 @@
 #include "MapTools.h"
 #include "Global.h"
 #include "UnitData.h"
+#include "MapTools.h"
 
 using namespace UAlbertaBot;
 
@@ -295,8 +296,6 @@ BWAPI::TilePosition BaseLocationManager::getNextExpansion(BWAPI::Player player) 
 
     for (auto & base : getBaseLocations())
     {
-        // skip mineral only and starting locations (TODO: fix this)
-        //if (base->isMineralOnly() || base->isStartLocation() || base->isOccupiedByPlayer(BWAPI::Broodwar->self()))
         if (base->isStartLocation() || base->isOccupiedByPlayer(BWAPI::Broodwar->self()))
         {
             continue;
@@ -328,7 +327,30 @@ BWAPI::TilePosition BaseLocationManager::getNextExpansion(BWAPI::Player player) 
         }
     }
     
-        
+    if (!closestBase || closestBase->getDepotPosition() == BWAPI::TilePosition(0, 0))
+    {
+        std::vector<const BWAPI::Unit*> allDepots;
+        for (auto& unit : BWAPI::Broodwar->self()->getUnits()) {
+            if (unit->getType() == BWAPI::UnitTypes::Protoss_Nexus)
+                allDepots.push_back(&unit);
+        }
+
+
+
+
+        const std::vector<const BaseLocation*> bases = Global::Map().sortBaseLocationsByDistance(Global::Bases().getPlayerStartingBaseLocation(BWAPI::Broodwar->self()));
+        for (auto& base : bases)
+        {
+            const BWAPI::TilePosition depotLocation = base->getDepotPosition();
+            for (const BWAPI::Unit* depot : allDepots) {
+                if ((*depot)->getTilePosition() == depotLocation || (abs((*depot)->getTilePosition().x - depotLocation.x) < 2 && abs((*depot)->getTilePosition().y - depotLocation.y) < 2))
+                    continue;
+                if (Global::Map().isAccessiblefromBWEM(base->getPosition(), homeBase->getPosition()))
+                    return base->getDepotPosition();
+            }
+        }
+    
+    }
     
     return closestBase ? closestBase->getDepotPosition() : BWAPI::TilePosition(0, 0);
 }

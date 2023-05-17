@@ -216,20 +216,26 @@ BWAPI::TilePosition BuildingPlacerManager::getBuildLocationNear(const Building &
                 closestDist = distance;
             }
         }
-        if (closestDist > 500) {
-            // get closest chokepoint through BWEM
-            BWAPI::TilePosition closestChokepoint = UAlbertaBot::MapTools::findCLosestChokepointPos();
-
-            const std::vector<BWAPI::TilePosition>& closestToChokePoint = Global::Map().getClosestTilesTo(closestChokepoint);
-
-            for (size_t i = 0; i < closestToChokePoint.size(); ++i)
+        if (closestDist > 500)
+        {
+            if (BWAPI::Broodwar->getFrameCount() < 10000 ||
+               (BWAPI::Broodwar->mapFileName() != "(2)Destination.scx" &&
+                BWAPI::Broodwar->mapFileName() != "(2)Heartbreak Ridge.scx")) 
             {
+                // get closest chokepoint through BWEM
+                BWAPI::TilePosition closestChokepoint = UAlbertaBot::MapTools::findCLosestChokepointPos();
 
-                if (canBuildHereWithSpace(closestToChokePoint[i], b, buildDist, horizontalOnly && i > 12) &&
-                    BWAPI::Broodwar->hasPower(closestToChokePoint[i].x, closestToChokePoint[i].y))
+                const std::vector<BWAPI::TilePosition>& closestToChokePoint = Global::Map().getClosestTilesTo(closestChokepoint);
+
+                for (size_t i = 0; i < closestToChokePoint.size(); ++i)
                 {
 
-                    return closestToChokePoint[i];
+                    if (canBuildHereWithSpace(closestToChokePoint[i], b, buildDist, horizontalOnly && i > 12) &&
+                        BWAPI::Broodwar->hasPower(closestToChokePoint[i].x, closestToChokePoint[i].y))
+                    {
+
+                        return closestToChokePoint[i];
+                    }
                 }
             }
         }       

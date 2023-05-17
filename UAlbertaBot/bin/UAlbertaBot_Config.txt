@@ -45,7 +45,7 @@
         "DrawProductionInfo"        : true,
         "DrawWalkableSectors"       : false,
         "DrawTileInfo"              : false,       
-        "DrawBuildOrderSearchInfo"  : true,
+        "DrawBuildOrderSearchInfo"  : false,
         "DrawScoutInfo"             : false,
         "DrawEnemyUnitInfo"         : false,
         "DrawModuleTimers"          : false,

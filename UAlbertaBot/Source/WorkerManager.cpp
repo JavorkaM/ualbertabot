@@ -138,6 +138,7 @@ void WorkerManager::updateThreeWorkers()
             if (m_workerData.getWorkerJob(worker) == WorkerData::Combat)
             {
                 std::cout << "Combat worker" << std::endl;
+                continue;
             }
             if (m_workerData.getWorkerJob(worker) == WorkerData::Idle)
             {

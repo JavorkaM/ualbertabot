@@ -470,7 +470,7 @@ double getDistance(BWAPI::Position p1, BWAPI::Position  p2) {
     return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
 }
 
-const std::vector<const BaseLocation*> sortBaseLocationsByDistance(const BaseLocation* enemyBase) {
+std::vector<const BaseLocation*> MapTools::sortBaseLocationsByDistance(const BaseLocation* enemyBase) const {
     const std::vector<const BaseLocation*> baseLocations(Global::Bases().getBaseLocations());
     std::vector<const BaseLocation*> baseLocationsCopy = baseLocations;
     std::sort(baseLocationsCopy.begin(), baseLocationsCopy.end(), [enemyBase](const BaseLocation* a, const BaseLocation* b) {
@@ -613,7 +613,7 @@ BWAPI::TilePosition MapTools::getLeastRecentlySeenBase() const
 {
     int minSeen = std::numeric_limits<int>::max();
     BWAPI::TilePosition leastSeen;
-    const std::vector<const BaseLocation*> bases = Global::Bases().getStartingBaseLocations();
+    const std::vector<const BaseLocation*> bases = Global::Bases().getBaseLocations();
     const BaseLocation* baseLocation = Global::Bases().getPlayerStartingBaseLocation(BWAPI::Broodwar->self());
 
     
@@ -830,4 +830,37 @@ const BWEM::ChokePoint* MapTools::findCLosestChokepoint() const
     //std::cout << closestChokepoint.x << ":" << closestChokepoint.y << std::endl;
 
     return closestChokepoint;
+}
+
+bool MapTools::isAccessiblefromBWEM(BWAPI::TilePosition target, BWAPI::TilePosition from) const {
+    int lenght = -1;
+    bool blocked = false;
+    const BWEM::CPPath path = theMap.GetPath(BWAPI::Position(target.x * 32, target.y * 32), BWAPI::Position(from.x * 32, from.y * 32), &lenght);
+
+    for (auto& choke : path) {
+
+        if (choke->Blocked() || !choke->AccessibleFrom(findCLosestChokepoint())) {
+            blocked = true;
+        }
+    }
+    if (blocked || lenght == -1) {
+        return false;
+    }
+    return true;
+}
+bool MapTools::isAccessiblefromBWEM(BWAPI::Position target, BWAPI::Position from) const {
+    int lenght = -1;
+    bool blocked = false;
+    const BWEM::CPPath path = theMap.GetPath(target, from, &lenght);
+
+    for (auto& choke : path) {
+
+        if (choke->Blocked() || !choke->AccessibleFrom(findCLosestChokepoint())) {
+            blocked = true;
+        }
+    }
+    if (blocked || lenght == -1) {
+        return false;
+    }
+    return true;
 }
