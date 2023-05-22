@@ -61,7 +61,6 @@ void DetectorManager::executeMicro(const BWAPI::Unitset & targets)
         {
             for (auto& unit : cloakedUnits) {
                 if (!m_cloakedUnitMap[unit] && unit->getPosition()) {
-                    std::cout << unit->getPosition().x << ":" << unit->getPosition().y << std::endl;
                     Micro::SmartMove(detectorUnit, unit->getPosition());
                     m_cloakedUnitMap[unit] = true;
                     break;

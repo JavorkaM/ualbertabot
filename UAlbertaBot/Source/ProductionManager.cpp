@@ -247,6 +247,7 @@ void ProductionManager::update()
 
     for (auto& unit : BWAPI::Broodwar->enemy()->getUnits())
     {
+        // If it is one of the buildings we are looking for -> add them
         if (unit->getType() == BWAPI::UnitTypes::Protoss_Templar_Archives)
             enemy_has_Archives = true;
 
@@ -259,24 +260,22 @@ void ProductionManager::update()
         if (unit->getType() == BWAPI::UnitTypes::Zerg_Spawning_Pool)
             Zerg_Spawning_Pool_Count++;
 
-
+        // If it is unknown, a building, or a worker -> Skip it
         if (unit->getType() == BWAPI::UnitTypes::None || unit->getType() == BWAPI::UnitTypes::Unknown ||
             unit->getType().isBuilding() || unit->getType() == BWAPI::UnitTypes::Protoss_Probe ||
             unit->getType() == BWAPI::UnitTypes::Terran_SCV || unit->getType() == BWAPI::UnitTypes::Zerg_Drone)
             continue;
 
-
+        // Let's find the closest attacking unit
         double distance = unit->getDistance(depotPosition);
 
         if (closestDist > distance) {
             closestDist = distance;
         }
         double unitRating = getUnitRating(unit->getType().getName());
+        // If tehe ubnit has a rating -> add them to the tally
         if (unitRating >= 0)
             enemyCombatUnitCount += unitRating;
-        else {
-            //std::cout << "unit not found in rating" << std::endl;
-        }
     }
     for (auto& unit : BWAPI::Broodwar->self()->getUnits())
     {
@@ -292,22 +291,12 @@ void ProductionManager::update()
 
     }
 
-    /*std::cout << selfCombatUnitCount;
-    std::cout << " vs. ";
-    std::cout << enemyCombatUnitCount << std::endl;
-    std::cout << "distance";
-    std::cout << closestDist << std::endl;
-    std::cout << "Forge Num: ";
-    std::cout << BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) << std::endl;
-    std::cout << "Forge in queue?: ";
-    std::cout << m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) << std::endl;
-    std::cout << "Forge being built?: ";
-    std::cout << m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge) << std::endl;*/
-
-
+    // If the enemies army rating is higher, and they are closer than our threshold -> Go defensive
     if (enemyCombatUnitCount > selfCombatUnitCount && 
         closestDist < 1850 + ((enemyCombatUnitCount - selfCombatUnitCount) * 200))
     {
+        // Check if there isn't any already in queue or being built
+        // Check for prerequisites
         if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 1
             && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
             && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Photon_Cannon)
@@ -320,6 +309,7 @@ void ProductionManager::update()
     if (enemyCombatUnitCount > selfCombatUnitCount && 
         closestDist < 2350 + ((enemyCombatUnitCount - selfCombatUnitCount) * 200))
     {
+        // Check if there isn't any already in queue or being built
         if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0 &&
             !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&
             !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
@@ -330,68 +320,39 @@ void ProductionManager::update()
 
 
     // Checking for Dark Templar - Protoss
-    // Chcking for fast Zerg rush
+    // Checking for fast Zerg rush
 
+    // Check if there isn't any already in queue or being built
+    // Check for prerequisites
     if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0 &&
         !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) &&
         !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge))
     {
-        //std::cout << m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Forge) << m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Forge) << std::endl;
-        
-        //m_queue.printItems();
-        /*
-        if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Gateway) > 0 && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Gateway)
-            && sawSpawningPool && !madeForge) {
-            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Forge), 0, true, false));
-            sawSpawningPool = false;
-            madeForge = true;
-        }*/
-
-        if (enemy_has_Citadel || ( Zerg_Spawning_Pool_Count > 0 && BWAPI::Broodwar->getFrameCount() < 3500 ))
+        // If enemy has Citadel of Adun, they are going for Dark Templars
+        // If enemy has Spawning Pool early, they are going for Zerglings fast
+        if (enemy_has_Citadel || (Zerg_Spawning_Pool_Count > 0 && BWAPI::Broodwar->getFrameCount() < 3500))
         {
-            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Forge), 1, true, false));          
-
-            /*if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Gateway) > 0 && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Gateway) && !madeForge)
-            else {
-                sawSpawningPool = true;
-            }*/
-            //std::cout << "forge" << BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Gateway) << std::endl;
+            m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Forge), 1, true, false));
         }
         if (enemy_has_Archives) {
-            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true , false);
+            m_queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true, false);
         }
-
-
     }
-
+    // Check if there isn't any already in queue or being built
+    // Check for prerequisites
     if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 1
         && !m_queue.anyInQueue(BWAPI::UnitTypes::Protoss_Photon_Cannon)
         && !m_buildingManager.isBeingBuilt(BWAPI::UnitTypes::Protoss_Photon_Cannon)
         && BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) > 0)
     {
+        // If enemy has Templar Archives, they are going for Dark Templars
+        // If enemy has Spawning Pool early, they are going for Zerglings fast
         if (enemy_has_Archives || Zerg_Spawning_Pool_Count > 0 && BWAPI::Broodwar->getFrameCount() < 3500)
         {
             m_queue.queueItem(BuildOrderItem(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), 0, true, false));
         }
     }
 
-
-    if (m_queue == m_queue_last_copy) {
-        if (BWAPI::Broodwar->getFrameCount() - last_m_queue_change_at > 2000 ) {
-            m_queue.clearAll();
-            if (Config::Debug::DrawBuildOrderSearchInfo)
-            {
-                BWAPI::Broodwar->drawTextScreen(150, 10, "Build order stuck, looking for a new one!");
-            }
-
-            performBuildOrderSearch();
-        }
-            
-    }
-    else {
-        m_queue_last_copy = m_queue;
-        last_m_queue_change_at = BWAPI::Broodwar->getFrameCount();
-    }
 
 
 
@@ -433,7 +394,23 @@ void ProductionManager::update()
 
 
     
-    
+    if (m_queue == m_queue_last_copy) {
+        if (BWAPI::Broodwar->getFrameCount() - last_m_queue_change_at > 2000) {
+            m_queue.clearAll();
+            if (Config::Debug::DrawBuildOrderSearchInfo)
+            {
+                BWAPI::Broodwar->drawTextScreen(150, 10, "Build order stuck, looking for a new one!");
+            }
+
+            performBuildOrderSearch();
+        }
+
+    }
+    else {
+        m_queue_last_copy = m_queue;
+        last_m_queue_change_at = BWAPI::Broodwar->getFrameCount();
+    }
+
 
 
 	m_bossManager.drawSearchInformation(490, 100);

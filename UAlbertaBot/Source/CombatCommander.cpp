@@ -573,11 +573,11 @@ BWAPI::Position CombatCommander::getMainAttackLocation()
         }
     }
     
-    // Sixth choice: We can't see anything so explore the map attacking along the way
+    // Fifth choice: We can't see anything so explore the map attacking along the way
     if(BWAPI::Broodwar->getFrameCount() - startedBaseSearch  > 15000 || BWAPI::Broodwar->getFrameCount() > 60000)
         return BWAPI::Position(Global::Map().getLeastRecentlySeenTileEnemy());
 
-    // Fifth choice: Check unchecked bases
+    // Fourth choice: Check unchecked bases
     if (enemyBaseLocation) {
         if (startedBaseSearch < 0)
             startedBaseSearch = BWAPI::Broodwar->getFrameCount();
