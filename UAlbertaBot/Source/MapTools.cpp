@@ -540,7 +540,6 @@ BWAPI::TilePosition MapTools::getLeastRecentlySeenBaseEnemy() const
         }
     }
     BWAPI::Broodwar->drawCircleMap(leastSeen.x * 32, leastSeen.y * 32,  26, BWAPI::Color(0, 255, 0), true);
-    //std::cout << leastSeen.x * 32 << ":" << leastSeen.y * 32 << std::endl;
 
     return leastSeen;
 }
@@ -777,14 +776,10 @@ BWAPI::TilePosition MapTools::findCLosestChokepointPos()
     BWAPI::TilePosition startLocation = BWAPI::Broodwar->self()->getStartLocation();
     const BWEM::Area* ourArea = theMap.GetNearestArea(startLocation);
 
-    //std::cout << "ChokepointS" << std::endl;
     BWAPI::TilePosition closestChokepoint;
     int distanceFromHome, minDistance = 100000;
 
     for (auto& chokepoint : ourArea->ChokePoints()) {
-
-        //std::cout << chokepoint->Center().x << ":" << chokepoint->Center().y << std::endl;
-        //std::cout << chokepoint->Pos(chokepoint->middle).x/4 << ":" << chokepoint->Pos(chokepoint->middle).y/4 << std::endl;
         BWAPI::TilePosition pos = BWAPI::TilePosition(chokepoint->Pos(chokepoint->middle).x /4 , chokepoint->Pos(chokepoint->middle).y /4);
         
         distanceFromHome = pos.getDistance(startLocation);
@@ -796,7 +791,6 @@ BWAPI::TilePosition MapTools::findCLosestChokepointPos()
         }
 
     }
-    //std::cout << closestChokepoint.x << ":" << closestChokepoint.y << std::endl;
 
     return closestChokepoint;
 }
@@ -812,9 +806,6 @@ const BWEM::ChokePoint* MapTools::findCLosestChokepoint() const
     int distanceFromHome, minDistance = 100000;
 
     for (auto& chokepoint : ourArea->ChokePoints()) {
-
-        //std::cout << chokepoint->Center().x << ":" << chokepoint->Center().y << std::endl;
-        //std::cout << chokepoint->Pos(chokepoint->middle).x/4 << ":" << chokepoint->Pos(chokepoint->middle).y/4 << std::endl;
         BWAPI::TilePosition pos = BWAPI::TilePosition(chokepoint->Pos(chokepoint->middle).x /4 , chokepoint->Pos(chokepoint->middle).y /4);
         
         distanceFromHome = pos.getDistance(startLocation);
@@ -827,7 +818,6 @@ const BWEM::ChokePoint* MapTools::findCLosestChokepoint() const
         }
 
     }
-    //std::cout << closestChokepoint.x << ":" << closestChokepoint.y << std::endl;
 
     return closestChokepoint;
 }

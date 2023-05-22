@@ -189,8 +189,6 @@ const MetaPairVector StrategyManager::getProtossBuildOrderGoal() const
     // add observer to the goal if the enemy has cloaked units
     // or if game is long add Robotics_Facility for observers
 
-    printf("in strategy\n at %d", BWAPI::Broodwar->getFrameCount());
-
     if (Global::Info().enemyHasCloakedUnits() && BWAPI::Broodwar->getFrameCount() > 7000)
     {
         goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Robotics_Facility, 1));
@@ -231,7 +229,6 @@ const MetaPairVector StrategyManager::getProtossBuildOrderGoal() const
     // if we want to expand, insert a nexus into the build order
     if (shouldExpandNow())
     {
-        //std::cout << "should expand in strategy" << std::endl;
         goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Nexus, numNexusAll + 1));
     }
 

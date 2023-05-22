@@ -25,7 +25,6 @@
 #include <string>
 
 using namespace UAlbertaBot;
-size_t game_num = 110;
 UAlbertaBotModule::UAlbertaBotModule()
 {
     Global::GameStart();
@@ -72,101 +71,16 @@ void UAlbertaBotModule::onStart()
 
 void UAlbertaBotModule::onEnd(bool isWinner) 
 {
-    std::ofstream myfile;
-    myfile.open("D://Everything School//BP//Testing//m" + std::to_string(game_num) + ".txt", std::ios_base::app);
-
-
 	if (Config::Modules::UsingGameCommander)
 	{
 		Global::Strategy().onEnd(isWinner);
 	}
-
-    std::cout <<  std::to_string(game_num) << std::endl;
-    //myfile << "==================== Game number " + std::to_string(game_num++)  + " ====================" << std::endl;
-
     if (isWinner) {
         std::cout << "Win\n";
-        myfile << "Win\n";
     }
     else {
         std::cout << "Lose\n";
-        myfile << "Lose\n";
     }
-    std::cout << "frameCount: " + std::to_string(BWAPI::Broodwar->getFrameCount()) << std::endl;
-    myfile << "frameCount: " + std::to_string(BWAPI::Broodwar->getFrameCount()) << std::endl;
-
-    std::cout << "map: " + BWAPI::Broodwar->mapFileName() << std::endl;
-    myfile << "map: " + BWAPI::Broodwar->mapFileName() << std::endl;
-
-    std::cout << Config::Strategy::StrategyName << std::endl;
-    myfile << Config::Strategy::StrategyName << std::endl;
-
-    
-
-    std::cout << "------------UAlbertaBot stats: -------------------\n";
-    std::cout << "Number of units: " + std::to_string(BWAPI::Broodwar->self()->allUnitCount()) << std::endl;
-    std::cout << "gatheredMinerals: " + std::to_string(BWAPI::Broodwar->self()->gatheredMinerals()) << std::endl;
-    std::cout << "gatheredGas: " + std::to_string(BWAPI::Broodwar->self()->gatheredGas()) << std::endl;
-    std::cout << "getUnitScore: " + std::to_string(BWAPI::Broodwar->self()->getUnitScore()) << std::endl;
-    std::cout << "getBuildingScore: " + std::to_string(BWAPI::Broodwar->self()->getBuildingScore()) << std::endl;
-
-    myfile << "------------UAlbertaBot stats: -------------------\n";
-    myfile << "Number of units: " + std::to_string(BWAPI::Broodwar->self()->allUnitCount()) << std::endl;
-    myfile << "gatheredMinerals: " + std::to_string(BWAPI::Broodwar->self()->gatheredMinerals()) << std::endl;
-    myfile << "gatheredGas: " + std::to_string(BWAPI::Broodwar->self()->gatheredGas()) << std::endl;
-    myfile << "getUnitScore: " + std::to_string(BWAPI::Broodwar->self()->getUnitScore()) << std::endl;
-    myfile << "getBuildingScore: " + std::to_string(BWAPI::Broodwar->self()->   getBuildingScore()) << std::endl;
-
-    auto opponent = BWAPI::Broodwar->enemy();
-
-    
-
-    std::cout << "------------Opponent stats: -------------------\n";
-    std::cout << "Number of units: " + std::to_string(opponent->allUnitCount()) << std::endl;
-    std::cout << "gatheredMinerals: " + std::to_string(opponent->gatheredMinerals()) << std::endl;
-    std::cout << "gatheredGas: " + std::to_string(opponent->gatheredGas()) << std::endl;
-    std::cout << "getUnitScore: " + std::to_string(opponent->getUnitScore()) << std::endl;
-    std::cout << "getBuildingScore: " + std::to_string(opponent->getBuildingScore()) << std::endl;
-
-    
-
-    myfile << "------------Opponent stats: -------------------\n";
-    myfile << "Number of units: " + std::to_string(opponent->allUnitCount()) << std::endl;
-    myfile << "gatheredMinerals: " + std::to_string(opponent->gatheredMinerals()) << std::endl;
-    myfile << "gatheredGas: " + std::to_string(opponent->gatheredGas()) << std::endl;
-    myfile << "getUnitScore: " + std::to_string(opponent->getUnitScore()) << std::endl;
-    myfile << "getBuildingScore: " + std::to_string(opponent->getBuildingScore()) << std::endl;
-
-
-    std::cout << "Game Over\n";
-       
-    myfile << "Game Over\n"; 
-
-    auto race = opponent->getRace();
-    if (race == BWAPI::Races::Zerg) {
-        std::cout << "Zerg" << std::endl;
-        myfile << "Zerg\n";
-    }
-    else if (race == BWAPI::Races::Terran) {
-        std::cout << "Terran" << std::endl;
-        myfile << "Terran\n";
-    }else if (race == BWAPI::Races::Protoss) {
-        std::cout << "Protoss" << std::endl;
-        myfile << "Protoss\n";
-    }
-    else {
-        std::cout << "Unknown" << std::endl;
-        myfile << "Unknown\n";
-    }
-
-    std::cout << opponent->getRace() << std::endl;
-    myfile << opponent->getRace() + "\n";
-
-    myfile << "numofNexus: " + std::to_string(BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Nexus)) + "\n";
-    myfile << "numofDetectors: " + std::to_string(BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Observer)) + "\n";
-
-    myfile.close();
-    game_num++;
 }
 
 void UAlbertaBotModule::onFrame()
